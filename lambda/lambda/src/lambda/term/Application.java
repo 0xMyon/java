@@ -3,6 +3,8 @@ package lambda.term;
 import java.util.Map;
 
 import lambda.Term;
+import lambda.Type;
+import lambda.type.ArrowType;
 
 public class Application implements Term {
 
@@ -11,6 +13,8 @@ public class Application implements Term {
 	public Application(Term function, Term parameter) {
 		this.function = function;
 		this.parameter = parameter;
+		assert function.type() instanceof ArrowType : "function is not of ArrowType";
+		assert ((ArrowType)function.type()).domain().equals(parameter.type()) : "Domain missmatch";
 	}
 	
 	@Override
@@ -32,6 +36,11 @@ public class Application implements Term {
 			return this.function.isEqual(that.function, map) && this.parameter.isEqual(that.parameter, map);
 		}
 		return false;
+	}
+
+	@Override
+	public Type type() {
+		return ((ArrowType)function.type()).codomain();
 	}
 
 }

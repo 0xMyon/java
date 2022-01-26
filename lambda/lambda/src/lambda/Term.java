@@ -21,4 +21,6 @@ public interface Term {
 		return this.reduce().isEqual(that.reduce());
 	}
 	
+	Type type();
+	
 }

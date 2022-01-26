@@ -3,9 +3,16 @@ package lambda.term;
 import java.util.Map;
 
 import lambda.Term;
+import lambda.Type;
 
 public class Variable implements Term {
 
+	private final Type type;
+	
+	public Variable(Type type) {
+		this.type = type;
+	}
+	
 	@Override
 	public Term replace(Variable variable, Term term) {
 		return equals(variable) ? term : this;
@@ -27,6 +34,11 @@ public class Variable implements Term {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public Type type() {
+		return type;
 	}
 
 	
