@@ -1,6 +1,8 @@
-package lambda;
+package lambda.term;
 
 import java.util.Map;
+
+import lambda.Term;
 
 public class Application implements Term {
 

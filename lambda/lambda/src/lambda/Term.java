@@ -3,6 +3,8 @@ package lambda;
 import java.util.HashMap;
 import java.util.Map;
 
+import lambda.term.Variable;
+
 public interface Term {
 
 	Term replace(Variable variable, Term term);

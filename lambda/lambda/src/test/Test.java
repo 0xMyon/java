@@ -2,10 +2,10 @@ package test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import lambda.Abstraction;
-import lambda.Application;
 import lambda.Term;
-import lambda.Variable;
+import lambda.term.Abstraction;
+import lambda.term.Application;
+import lambda.term.Variable;
 
 class Test {
 

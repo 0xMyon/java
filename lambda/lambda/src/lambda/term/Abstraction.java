@@ -1,7 +1,9 @@
-package lambda;
+package lambda.term;
 
 import java.util.Map;
 import java.util.function.Function;
+
+import lambda.Term;
 
 public class Abstraction implements Term {
 
