@@ -2,6 +2,7 @@ package lambda.term;
 
 import java.util.Map;
 
+import lambda.Reducible;
 import lambda.Term;
 import lambda.Type;
 import lambda.reducible.ReducibleVariable;
@@ -19,7 +20,7 @@ public class Application implements Term {
 	}
 	
 	@Override
-	public Term replace(ReducibleVariable<? extends Term> variable, Term term) {
+	public <X extends Reducible<X>> Term replace(ReducibleVariable<X> variable, X term) {
 		return new Application(function.replace(variable, term), parameter.replace(variable, term));
 	}
 

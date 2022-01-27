@@ -3,6 +3,7 @@ package lambda.term;
 import java.util.Map;
 import java.util.function.Function;
 
+import lambda.Reducible;
 import lambda.Term;
 import lambda.Type;
 import lambda.reducible.ReducibleVariable;
@@ -19,8 +20,8 @@ public class Abstraction implements Term {
 	}
 
 	@Override
-	public Term replace(ReducibleVariable<? extends Term> variable, Term term) {
-		return new Abstraction(variable.THIS().type(), x -> this.term.replace(this.variable, x).replace(variable, term));
+	public <X extends Reducible<X>> Term replace(ReducibleVariable<X> variable, X term) {
+		return new Abstraction(this.variable.type(), x -> this.term.replace(this.variable, x).replace(variable, term));
 	}
 
 	public Term apply(Term parameter) {

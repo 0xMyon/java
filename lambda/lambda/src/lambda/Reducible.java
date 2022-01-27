@@ -14,7 +14,7 @@ import lambda.reducible.ReducibleVariable;
  */
 public interface Reducible<T extends Reducible<T>> {
 
-	T replace(final ReducibleVariable<? extends T> variable, final T term);
+	<X extends Reducible<X>> T replace(final ReducibleVariable<X> variable, final X term);
 
 	/**
 	 * perform many step beta-reduction

@@ -7,9 +7,10 @@ import lambda.Reducible;
 public abstract class ReducibleVariable<T extends Reducible<T>> implements Reducible<T> {
 
 
+	@SuppressWarnings("unchecked") // if this == variable => T == X
 	@Override
-	public T replace(ReducibleVariable<? extends T> variable, T term) {
-		return equals(variable) ? term : THIS();
+	public <X extends Reducible<X>> T replace(ReducibleVariable<X> variable, X term) {
+		return equals(variable) ? (T)term : THIS();
 	}
 
 	@Override
