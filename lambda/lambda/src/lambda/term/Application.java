@@ -4,6 +4,7 @@ import java.util.Map;
 
 import lambda.Term;
 import lambda.Type;
+import lambda.reducible.ReducibleVariable;
 import lambda.type.ArrowType;
 
 public class Application implements Term {
@@ -18,7 +19,7 @@ public class Application implements Term {
 	}
 	
 	@Override
-	public Term replace(Variable variable, Term term) {
+	public Term replace(ReducibleVariable<? extends Term> variable, Term term) {
 		return new Application(function.replace(variable, term), parameter.replace(variable, term));
 	}
 
@@ -30,7 +31,7 @@ public class Application implements Term {
 	}
 
 	@Override
-	public boolean isEqual(Term term, Map<Variable, Variable> map) {
+	public boolean isEqual(Term term, Map<ReducibleVariable<?>, ReducibleVariable<?>> map) {
 		if (term instanceof Application) {
 			final Application that = (Application) term;
 			return this.function.isEqual(that.function, map) && this.parameter.isEqual(that.parameter, map);

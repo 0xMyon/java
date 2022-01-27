@@ -5,6 +5,7 @@ import java.util.function.Function;
 
 import lambda.Term;
 import lambda.Type;
+import lambda.reducible.ReducibleVariable;
 import lambda.type.ArrowType;
 
 public class Abstraction implements Term {
@@ -18,8 +19,8 @@ public class Abstraction implements Term {
 	}
 
 	@Override
-	public Term replace(Variable variable, Term term) {
-		return new Abstraction(variable.type(), x -> this.term.replace(this.variable, x).replace(variable, term));
+	public Term replace(ReducibleVariable<? extends Term> variable, Term term) {
+		return new Abstraction(variable.THIS().type(), x -> this.term.replace(this.variable, x).replace(variable, term));
 	}
 
 	public Term apply(Term parameter) {
@@ -32,7 +33,7 @@ public class Abstraction implements Term {
 	}
 
 	@Override
-	public boolean isEqual(Term term, Map<Variable, Variable> map) {
+	public boolean isEqual(Term term, Map<ReducibleVariable<?>, ReducibleVariable<?>> map) {
 		if (term instanceof Abstraction) {
 			Abstraction that = (Abstraction) term;
 			return this.variable.isEqual(that.variable, map) && this.term.isEqual(that.term, map);

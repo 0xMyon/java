@@ -3,7 +3,7 @@ package lambda;
 import java.util.HashMap;
 import java.util.Map;
 
-import lambda.term.Variable;
+import lambda.reducible.ReducibleVariable;
 
 /**
  * beta-reducible interface 
@@ -14,7 +14,7 @@ import lambda.term.Variable;
  */
 public interface Reducible<T extends Reducible<T>> {
 
-	T replace(final Variable variable, final T term);
+	T replace(final ReducibleVariable<? extends T> variable, final T term);
 
 	/**
 	 * perform many step beta-reduction
@@ -28,7 +28,7 @@ public interface Reducible<T extends Reducible<T>> {
 	 * @param map mapped variables
 	 * @return true, if there is a variable mapping such that term can be created
 	 */
-	boolean isEqual(final T term, final Map<Variable, Variable> map);
+	boolean isEqual(final T term, final Map<ReducibleVariable<?>, ReducibleVariable<?>> map);
 
 	/**
 	 * structural equality
