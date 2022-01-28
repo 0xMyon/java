@@ -19,7 +19,7 @@ public class Application<V,T> implements Reducible<T> {
 		this.parameter = parameter;
 		assert function.type() instanceof Abstraction : "function is not of type Abstraction";
 		@SuppressWarnings("unchecked")
-		final Reducible<Type<Type<V>>> domain = ((Abstraction<Type<V>,Type<T>>)function.type()).domain();
+		final Reducible<Type<V>> domain = ((Abstraction<V,Type<T>>)function.type()).domain();
 		assert domain.isMapping(parameter.type()) : "Domain missmatch: "+domain+":"+domain.type()+" -> "+parameter.type()+":"+parameter.type().type();
 	}
 	
@@ -48,7 +48,7 @@ public class Application<V,T> implements Reducible<T> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Reducible<Type<T>> type() {
-		return ((Abstraction<Type<V>,Type<T>>)function.type()).apply(parameter.type());
+		return ((Abstraction<V,Type<T>>)function.type()).apply(parameter);
 	}
 
 	@Override
