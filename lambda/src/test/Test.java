@@ -7,10 +7,10 @@ import java.util.regex.Pattern;
 import lambda.Reducible;
 import lambda.Term;
 import lambda.Type;
+import lambda.reducible.Abstraction;
+import lambda.reducible.Application;
 import lambda.reducible.Constant;
 import lambda.reducible.Variable;
-import lambda.term.Abstraction;
-import lambda.term.Application;
 
 class Test {
 

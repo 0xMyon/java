@@ -1,10 +1,9 @@
-package lambda.term;
+package lambda.reducible;
 
 import java.util.Map;
 
 import lambda.Reducible;
 import lambda.Type;
-import lambda.reducible.Variable;
 
 public class Application<V,T> implements Reducible<T> {
 

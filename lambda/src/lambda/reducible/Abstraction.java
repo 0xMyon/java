@@ -1,11 +1,10 @@
-package lambda.term;
+package lambda.reducible;
 
 import java.util.Map;
 import java.util.function.Function;
 
 import lambda.Reducible;
 import lambda.Type;
-import lambda.reducible.Variable;
 
 public class Abstraction<V,T> implements Reducible<T> {
 
