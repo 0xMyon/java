@@ -2,3 +2,4 @@ lambda/lambda/bin/
 .classpath
 .project
 .settings/
+*.class
