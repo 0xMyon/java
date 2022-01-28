@@ -3,46 +3,49 @@ package lambda.term;
 import java.util.Map;
 
 import lambda.Reducible;
-import lambda.Term;
 import lambda.Type;
-import lambda.reducible.ReducibleVariable;
-import lambda.type.ArrowType;
+import lambda.reducible.Variable;
 
-public class Application implements Term {
+public class Application<V,T> implements Reducible<T> {
 
-	private final Term function, parameter;
+	private final Reducible<T> function;
+	private final Reducible<V> parameter;
 	
-	public Application(Term function, Term parameter) {
+	public String toString() {
+		return "("+function.toString()+" "+parameter.toString()+")";
+	}
+	
+	public Application(Reducible<T> function, Reducible<V> parameter) {
 		this.function = function;
 		this.parameter = parameter;
-		assert function.type() instanceof ArrowType : "function is not of ArrowType";
-		assert ((ArrowType)function.type()).domain().equals(parameter.type()) : "Domain missmatch";
+		assert function.type() instanceof Abstraction : "function is not of ArrowType";
+		assert ((Abstraction<Type<V>,Type<T>>)function.type()).domain().isEqual(parameter.type()) : "Domain missmatch";
 	}
 	
 	@Override
-	public <X extends Reducible<X>> Term replace(ReducibleVariable<X> variable, X term) {
-		return new Application(function.replace(variable, term), parameter.replace(variable, term));
+	public <X> Reducible<T> replace(Variable<X> variable, Reducible<X> term) {
+		return new Application<V,T>(function.replace(variable, term), parameter.replace(variable, term));
 	}
 
 	@Override
-	public Term reduce() {
+	public Reducible<T> reduce() {
 		return (function instanceof Abstraction) 
-				? ((Abstraction)function).apply(parameter).reduce()
-				: new Application(function.reduce(), parameter.reduce());
+				? ((Abstraction<V,T>)function).apply(parameter).reduce()
+				: new Application<V,T>(function.reduce(), parameter.reduce());
 	}
 
 	@Override
-	public boolean isEqual(Term term, Map<ReducibleVariable<?>, ReducibleVariable<?>> map) {
+	public boolean isEqual(Reducible<?> term, Map<Variable<?>, Variable<?>> map) {
 		if (term instanceof Application) {
-			final Application that = (Application) term;
+			final Application<?,?> that = (Application<?,?>) term;
 			return this.function.isEqual(that.function, map) && this.parameter.isEqual(that.parameter, map);
 		}
 		return false;
 	}
 
 	@Override
-	public Type type() {
-		return ((ArrowType)function.type()).codomain();
+	public Reducible<Type<T>> type() {
+		return ((Abstraction<Type<V>,Type<T>>)function.type()).apply(parameter.type());
 	}
 
 }

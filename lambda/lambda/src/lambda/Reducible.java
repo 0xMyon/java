@@ -3,7 +3,7 @@ package lambda;
 import java.util.HashMap;
 import java.util.Map;
 
-import lambda.reducible.ReducibleVariable;
+import lambda.reducible.Variable;
 
 /**
  * beta-reducible interface 
@@ -12,15 +12,15 @@ import lambda.reducible.ReducibleVariable;
  *
  * @param <T>
  */
-public interface Reducible<T extends Reducible<T>> {
+public interface Reducible<T> {
 
-	<X extends Reducible<X>> T replace(final ReducibleVariable<X> variable, final X term);
+	<X> Reducible<T> replace(final Variable<X> variable, final Reducible<X> term);
 
 	/**
 	 * perform many step beta-reduction
 	 * @return T in beta-normal form
 	 */
-	T reduce();
+	Reducible<T> reduce();
 
 	/**
 	 * structural equality with variable mapping
@@ -28,28 +28,25 @@ public interface Reducible<T extends Reducible<T>> {
 	 * @param map mapped variables
 	 * @return true, if there is a variable mapping such that term can be created
 	 */
-	boolean isEqual(final T term, final Map<ReducibleVariable<?>, ReducibleVariable<?>> map);
+	boolean isEqual(final Reducible<?> term, final Map<Variable<?>, Variable<?>> map);
 
 	/**
 	 * structural equality
 	 * @param that T to be compared to
 	 * @return true, if structural equal
 	 */
-	default boolean isEqual(final T that) {
-		return isEqual(that, new HashMap<>()) && that.isEqual(THIS(), new HashMap<>());
+	default boolean isEqual(final Reducible<?> that) {
+		return isEqual(that, new HashMap<>()) && that.isEqual(this, new HashMap<>());
 	}
 	
 	/**
 	 * @param that
 	 * @return true, if beta-equivalent
 	 */
-	default boolean isBetaEqual(final T that) {
+	default boolean isBetaEqual(final Reducible<T> that) {
 		return this.reduce().isEqual(that.reduce());
 	}
-	
-	/**
-	 * @return this in underlying type T
-	 */
-	T THIS();
+		
+	Reducible<Type<T>> type();
 
 }

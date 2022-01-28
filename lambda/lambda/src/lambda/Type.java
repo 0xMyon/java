@@ -1,5 +1,5 @@
 package lambda;
 
-public interface Type {
+public interface Type<T> {
 
 }

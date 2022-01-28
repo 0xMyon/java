@@ -4,49 +4,53 @@ import java.util.Map;
 import java.util.function.Function;
 
 import lambda.Reducible;
-import lambda.Term;
 import lambda.Type;
-import lambda.reducible.ReducibleVariable;
-import lambda.type.ArrowType;
+import lambda.reducible.Variable;
 
-public class Abstraction implements Term {
+public class Abstraction<V,T> implements Reducible<T> {
 
-	private final Variable variable;
-	private final Term term;
-	
-	public Abstraction(Type type, Function<Variable, Term> lambda) {
-		this.variable = new Variable(type);
+	private final Variable<V> variable;
+	private final Reducible<T> term;
+
+	public Abstraction(Reducible<Type<V>> type, Function<Variable<V>, Reducible<T>> lambda) {
+		this.variable = new Variable<V>(type);
 		this.term = lambda.apply(variable);
 	}
 
 	@Override
-	public <X extends Reducible<X>> Term replace(ReducibleVariable<X> variable, X term) {
-		return new Abstraction(this.variable.type(), x -> this.term.replace(this.variable, x).replace(variable, term));
+	public <X> Reducible<T> replace(Variable<X> variable, Reducible<X> term) {
+		return new Abstraction<V,T>(this.variable.type(), x -> apply(x).replace(variable, term));
 	}
 
-	public Term apply(Term parameter) {
+	public Reducible<T> apply(Reducible<V> parameter) {
 		return term.replace(variable, parameter);
 	}
 
 	@Override
-	public Term reduce() {
-		return new Abstraction(variable.type(), x -> this.term.replace(this.variable, x).reduce());
+	public Reducible<T> reduce() {
+		return new Abstraction<V,T>(variable.type(), x -> apply(x).reduce());
 	}
 
 	@Override
-	public boolean isEqual(Term term, Map<ReducibleVariable<?>, ReducibleVariable<?>> map) {
+	public boolean isEqual(Reducible<?> term, Map<Variable<?>, Variable<?>> map) {
 		if (term instanceof Abstraction) {
-			Abstraction that = (Abstraction) term;
+			Abstraction<?,?> that = (Abstraction<?,?>) term;
 			return this.variable.isEqual(that.variable, map) && this.term.isEqual(that.term, map);
 		}
 		return false;
 	}
 
 	@Override
-	public Type type() {
-		return new ArrowType(variable.type(), term.type());
+	public Reducible<Type<T>> type() {
+		return new Abstraction<V, Type<T>>(domain(), x -> term.type());
+	}
+
+	public Reducible<Type<V>> domain() {
+		return variable.type();
 	}
 	
-	
-	
+	public String toString() {
+		return "λ"+variable.toString()+":"+variable.type().toString()+"."+term.toString();
+	}
+
 }
