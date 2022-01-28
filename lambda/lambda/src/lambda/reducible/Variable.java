@@ -8,10 +8,22 @@ import lambda.Type;
 public class Variable<T> implements Reducible<T> {
 
 	private static int ID = 0;
+	
 	private final int id = ID++;
+	private final Reducible<Type<T>> type;
+	
+	
+	public Variable(Reducible<Type<T>> type) {
+		this.type = type;
+	}
+	
+	@Override
+	public Reducible<Type<T>> type() {
+		return type;
+	}
 	
 	public String toString() {
-		return ""+id;
+		return Integer.toString(id);
 	}
 
 	@SuppressWarnings("unchecked") // if this == variable => T == X
@@ -26,27 +38,35 @@ public class Variable<T> implements Reducible<T> {
 	}
 
 	@Override
-	public boolean isEqual(Reducible<?> term, Map<Variable<?>, Variable<?>> map) {
-		if (term instanceof Variable) {
+	public boolean isMapping(Reducible<?> term, Map<Variable<?>, Reducible<?>> map) {
+		try {
 			if (map.containsKey(this)) {
 				return map.get(this).equals(term);
-			} else if (this.type().equals(term.type())) {
-				map.put(this, (Variable<?>)term);
+			} else if (this.type().isMapping(term.type(), map)) {
+				map.put(this, term);
+				return true;
+			}
+		} catch (AssertionError e) {}
+		return false;
+		
+		/*
+		if (term instanceof Variable) {
+			Variable<?> that = (Variable<?>) term;
+			if (map.containsKey(this)) {
+				return map.get(this).equals(term);
+			} else if (this.type().isMapping(term.type(), map)) {
+				map.put(this, that);
 				return true;
 			}
 		}
 		return false;
+		*/
 	}
-	
-	private final Reducible<Type<T>> type;
-	
-	public Variable(Reducible<Type<T>> type) {
-		this.type = type;
-	}
-	
+
 	@Override
-	public Reducible<Type<T>> type() {
-		return type;
+	public boolean contains(Variable<?> variable) {
+		return equals(variable) || type.contains(variable);
 	}
+	
 
 }

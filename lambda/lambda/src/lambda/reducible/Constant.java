@@ -8,17 +8,17 @@ import lambda.Type;
 
 public class Constant<T> implements Reducible<T> {
 
-	private final Reducible<Type<T>> type;
+	private final Constant<Type<T>> type;
 	
 	private final String name;
 	
-	Constant(Reducible<Type<T>> type, String name) {
+	public Constant(String name, Constant<Type<T>> type) {
 		this.type = type;
 		this.name = name;
 	}
 	
 	public Constant(String name) {
-		this(null, name);
+		this(name, null);
 	}
 	
 	
@@ -33,19 +33,23 @@ public class Constant<T> implements Reducible<T> {
 	}
 
 	@Override
-	public boolean isEqual(Reducible<?> term, Map<Variable<?>, Variable<?>> map) {
+	public boolean isMapping(Reducible<?> term, Map<Variable<?>, Reducible<?>> map) {
 		return Objects.equals(this, term);
 	}
 
 	@Override
-	public Reducible<Type<T>> type() {
-		if (null == type)
-			throw new Error();
+	public Constant<Type<T>> type() {
+		assert Objects.nonNull(type) : "can not get type of '"+name+"'";
 		return type;
 	}
 	
 	public String toString() {
 		return name;
+	}
+
+	@Override
+	public boolean contains(Variable<?> variable) {
+		return false;
 	}
 
 }

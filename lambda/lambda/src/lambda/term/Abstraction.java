@@ -13,13 +13,13 @@ public class Abstraction<V,T> implements Reducible<T> {
 	private final Reducible<T> term;
 
 	public Abstraction(Reducible<Type<V>> type, Function<Variable<V>, Reducible<T>> lambda) {
-		this.variable = new Variable<V>(type);
+		this.variable = new Variable<>(type);
 		this.term = lambda.apply(variable);
 	}
 
 	@Override
 	public <X> Reducible<T> replace(Variable<X> variable, Reducible<X> term) {
-		return new Abstraction<V,T>(this.variable.type(), x -> apply(x).replace(variable, term));
+		return new Abstraction<>(this.variable.type().replace(variable, term), x -> apply(x).replace(variable, term));
 	}
 
 	public Reducible<T> apply(Reducible<V> parameter) {
@@ -28,21 +28,21 @@ public class Abstraction<V,T> implements Reducible<T> {
 
 	@Override
 	public Reducible<T> reduce() {
-		return new Abstraction<V,T>(variable.type(), x -> apply(x).reduce());
+		return new Abstraction<>(variable.type().reduce(), x -> apply(x).reduce());
 	}
 
 	@Override
-	public boolean isEqual(Reducible<?> term, Map<Variable<?>, Variable<?>> map) {
+	public boolean isMapping(Reducible<?> term, Map<Variable<?>, Reducible<?>> map) {
 		if (term instanceof Abstraction) {
 			Abstraction<?,?> that = (Abstraction<?,?>) term;
-			return this.variable.isEqual(that.variable, map) && this.term.isEqual(that.term, map);
+			return this.variable.isMapping(that.variable, map) && this.term.isMapping(that.term, map);
 		}
 		return false;
 	}
 
 	@Override
 	public Reducible<Type<T>> type() {
-		return new Abstraction<V, Type<T>>(domain(), x -> term.type());
+		return new Abstraction<>(domain(), x -> apply(x).type());
 	}
 
 	public Reducible<Type<V>> domain() {
@@ -50,7 +50,17 @@ public class Abstraction<V,T> implements Reducible<T> {
 	}
 	
 	public String toString() {
-		return "λ"+variable.toString()+":"+variable.type().toString()+"."+term.toString();
+		if (term.contains(variable))
+			return "λ"+variable.toString()+":"+variable.type().toString()+"."+term.toString();
+		else if (variable.type() instanceof Abstraction)
+			return "("+variable.type()+")->"+term;
+		else
+			return variable.type()+"->"+term;
+	}
+
+	@Override
+	public boolean contains(Variable<?> variable) {
+		return term.contains(variable);
 	}
 
 }
