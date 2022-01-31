@@ -11,7 +11,7 @@ public class Application<V,T> implements Reducible<T> {
 	private final Reducible<V> parameter;
 	
 	public String toString() {
-		return "("+function.toString()+" "+parameter.toString()+")";
+		return function.toString()+"("+parameter.toString()+")";
 	}
 	
 	public Application(Reducible<T> function, Reducible<V> parameter) {

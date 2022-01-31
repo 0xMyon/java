@@ -60,7 +60,7 @@ public class Abstraction<V,T> implements IAbstraction<V,T> {
 
 	@Override
 	public boolean contains(Variable<?> variable) {
-		return term.contains(variable);
+		return this.variable.contains(variable) || term.contains(variable);
 	}
 
 }

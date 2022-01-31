@@ -126,8 +126,15 @@ class Test {
 		System.out.println(ID+" : "+ID.type()+" : "+ID.type().type());
 				
 		// Types depending on Terms
-		new Abstraction<Term, Type<Term>>(I, i->i.type());
+		Reducible<Type<Term>> T_i = new Abstraction<Term, Type<Term>>(I, i->i.type());
+		System.out.println(T_i+" : "+T_i.type());
+		
+		// Types depending on Terms
+		Reducible<Term> i_T = new Abstraction<>(STAR, T->N0);
+		System.out.println(i_T+" : "+i_T.type());
 				
+		
+		System.out.println(id+" : "+id.type());
 		System.out.println(id_I+" : "+id_I.type());
 		System.out.println(id_I.reduce()+" : "+id_I.reduce().type());
 		System.out.println(id+" : "+id.type()+" : "+id.type().type());
