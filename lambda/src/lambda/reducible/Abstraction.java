@@ -6,7 +6,8 @@ import java.util.function.Function;
 import lambda.Reducible;
 import lambda.Type;
 
-public class Abstraction<V,T> implements Reducible<T> {
+ 
+public class Abstraction<V,T> implements IAbstraction<V,T> {
 
 	private final Variable<V> variable;
 	private final Reducible<T> term;
@@ -40,7 +41,7 @@ public class Abstraction<V,T> implements Reducible<T> {
 	}
 
 	@Override
-	public Reducible<Type<T>> type() {
+	public IAbstraction<V, Type<T>> type() {
 		return new Abstraction<>(domain(), x -> apply(x).type());
 	}
 
