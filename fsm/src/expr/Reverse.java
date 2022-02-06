@@ -1,5 +1,7 @@
 package expr;
 
+import java.util.function.Function;
+
 import lang.Language;
 
 public class Reverse<T> extends Expression<T> {
@@ -21,10 +23,9 @@ public class Reverse<T> extends Expression<T> {
 		return reverse;
 	}
 	
-
 	@Override
-	public <THAT extends Language<THAT, T>> THAT convert(lang.Language.Factory<THAT, T> factory) {
-		return reverse.convert(factory).reverse();
+	public <U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
+		return reverse.convertLanguage(factory, function).reverse();
 	}
 
 }

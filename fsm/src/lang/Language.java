@@ -1,8 +1,10 @@
 package lang;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 /**
  * {@link Type} of {@link Sequence}
@@ -13,7 +15,7 @@ import java.util.stream.Stream;
  */
 public interface Language<THIS extends Language<THIS, T>, T> extends Type<THIS, List<T>>, Sequence<THIS, T> {
 
-	
+	@Override
 	Factory<THIS, T> factory();
 
 	/**
@@ -49,11 +51,7 @@ public interface Language<THIS extends Language<THIS, T>, T> extends Type<THIS, 
 	}
 	
 	interface Factory<THIS extends Language<THIS, T>, T> extends Type.Factory<THIS, List<T>>, Sequence.Factory<THIS, T> {
-		
-		default THIS apply(Language<?, T> that) {
-			return that.convert(this);
-		}
-		
+				
 		@Override
 		public default THIS summand(List<T> that) {
 			return sequence(that.stream().map(this::factor));
@@ -61,12 +59,25 @@ public interface Language<THIS extends Language<THIS, T>, T> extends Type<THIS, 
 		
 	}
 	
-	<THAT extends Language<THAT, T>> THAT convert(Language.Factory<THAT, T> factory);
-	
-	
-	default <THAT extends Language<THAT, List<T>>> THAT toLanguage(Language.Factory<THAT, List<T>> factory) {
-		return null;
+	/**
+	 * convert between two {@link Language}s
+	 * @param <THAT>
+	 * @param factory
+	 * @return
+	 */
+	<U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T,U> function);
+		
+	default <THAT extends Language<THAT, T>> THAT convertLanguage(Language.Factory<THAT, T> factory) {
+		return convertLanguage(factory, Function.identity());
 	}
+	
+	
+	
+	@Override
+	default <U, THAT extends Type<THAT, U>> THAT convertType(Type.Factory<THAT, U> factory, Function<List<T>, U> function) {
+		throw new UnsupportedOperationException();
+	}
+	
 	
 	
 }

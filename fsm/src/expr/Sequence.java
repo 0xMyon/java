@@ -2,6 +2,7 @@ package expr;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 
 import lang.Language;
 
@@ -27,14 +28,12 @@ public class Sequence<T> extends Expression<T> {
 	private Sequence(List<Expression<T>> list) {
 		elements = list;
 	}
-	
 
 	private final List<Expression<T>> elements;
-
-
+	
 	@Override
-	public <THAT extends Language<THAT, T>> THAT convert(Language.Factory<THAT, T> factory) {
-		return factory.sequence(elements.stream().map(factory::apply));
+	public <U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
+		return factory.sequence(elements.stream().map(x -> x.convertLanguage(factory, function)));
 	}
 	
 	public String toString() {

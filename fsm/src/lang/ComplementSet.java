@@ -1,6 +1,7 @@
 package lang;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 
 public class ComplementSet<T> implements InfiniteSet<T> {
@@ -79,13 +80,13 @@ public class ComplementSet<T> implements InfiniteSet<T> {
 	}
 
 	@Override
-	public <THAT extends Language<THAT, T>> THAT toLanguage(lang.Language.Factory<THAT, T> factory) {
-		return complement.toLanguage(factory).complement();
+	public boolean isFinite() {
+		return false;
 	}
 
 	@Override
-	public boolean isFinite() {
-		return false;
+	public <U, THAT extends Type<THAT, U>> THAT convertType(lang.Type.Factory<THAT, U> factory, Function<T, U> function) {
+		return complement.convertType(factory, function).complement();
 	}
 	
 }

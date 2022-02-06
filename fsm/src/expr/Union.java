@@ -2,6 +2,7 @@ package expr;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import lang.Language;
 
@@ -36,8 +37,8 @@ public class Union<T> extends Expression<T> {
 	}
 
 	@Override
-	public <THAT extends Language<THAT, T>> THAT convert(Language.Factory<THAT, T> factory) {
-		return factory.union(elements.stream().map(factory::apply));
+	public <U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
+		return factory.union(elements.stream().map(x -> x.convertLanguage(factory, function)));
 	}
 	
 	public String toString() {

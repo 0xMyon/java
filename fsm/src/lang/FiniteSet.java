@@ -3,6 +3,7 @@ package lang;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -96,14 +97,14 @@ public class FiniteSet<T> implements InfiniteSet<T> {
 		return elements.isEmpty();
 	}
 	
-	@SuppressWarnings("unchecked")
-	@Override
-	public <THAT extends Language<THAT, T>> THAT toLanguage(Language.Factory<THAT, T> factory) {
-		return elements.stream().map(factory::factor).reduce(factory::union).orElse(factory.empty());
-	}
 	@Override
 	public boolean isFinite() {
 		return true;
+	}
+	
+	@Override
+	public <U, THAT extends Type<THAT, U>> THAT convertType(Type.Factory<THAT, U> factory, Function<T, U> f) {
+		return elements.stream().map(f).map(factory::summand).reduce(factory::union).orElse(factory.empty());
 	}
 	
 

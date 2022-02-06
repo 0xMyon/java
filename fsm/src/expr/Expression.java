@@ -2,6 +2,7 @@ package expr;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import fsm.Machine;
 import lang.InfiniteSet;
@@ -47,7 +48,7 @@ public abstract class Expression<T> implements Language<Expression<T>,T> {
 	
 	Machine<T, InfiniteSet<T>, Void> convert() {
 		if (machine.isEmpty())
-			machine = Optional.of(convert(MACHINE));
+			machine = Optional.of(convertType(MACHINE));
 		return machine.get();
 	}
 	

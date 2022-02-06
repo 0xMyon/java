@@ -2,6 +2,7 @@ package lang;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -114,8 +115,14 @@ public interface Type<THIS extends Type<THIS, T>, T> {
 		 */
 		THIS summand(T that);
 	}
+
 	
-	<THAT extends Language<THAT, T>> THAT toLanguage(final Language.Factory<THAT, T> factory);
+	<U, THAT extends Type<THAT, U>> THAT convertType(Type.Factory<THAT, U> factory, Function<T,U> function);
+
+	default <THAT extends Type<THAT, T>> THAT convertType(Type.Factory<THAT, T> factory) {
+		return convertType(factory, Function.identity());
+	}
+
 	
 	/**
 	 * @param types

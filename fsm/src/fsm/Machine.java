@@ -445,7 +445,7 @@ public class Machine<T,TYPE extends Type<TYPE,T>,R> implements Language<Machine<
 	@Override
 	public String toString() {
 		try {
-			return convert(new Expression.Factory<T>()).toString();
+			return convertLanguage(new Expression.Factory<T>()).toString();
 		} catch (Exception e) {
 			return transitions.toString()+(hasEpsilon()?"+e":"");
 		}
@@ -583,12 +583,12 @@ public class Machine<T,TYPE extends Type<TYPE,T>,R> implements Language<Machine<
 	}
 
 	@Override
-	public <THAT extends Language<THAT, T>> THAT convert(Language.Factory<THAT, T> factory) {
+	public <U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T,U> function) {
 		// TODO 
-		final Machine<List<T>, THAT, R> result = new Machine<>(factory, hasEpsilon());
+		final Machine<List<U>, THAT, R> result = new Machine<>(factory, hasEpsilon());
 		
 		
-		final Map<State<T,TYPE,R>, State<List<T>,THAT,R>> s1 = result.include(this, n -> n.toLanguage(factory));
+		final Map<State<T,TYPE,R>, State<List<U>,THAT,R>> s1 = result.include(this, n -> n.convertType(factory, function.andThen(List::of) ));
 		
 		
 		result.transition(result.initial, s1.get(this.initial));
