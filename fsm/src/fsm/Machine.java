@@ -22,7 +22,7 @@ import util.BooleanOperator;
 import util.Sets;
 import util.Tuple;
 
-public class Machine<T,TYPE extends Type<TYPE,T>,R> implements Language<Machine<T,TYPE,R>, T> {
+public class Machine<T,TYPE extends Type<TYPE,T>,R> implements Language<Machine<T,TYPE,R>, T>, Function<List<T>, List<R>> {
 
 	private final boolean epsilon;
 	private final Type.Factory<TYPE, T> factory;
@@ -467,7 +467,7 @@ public class Machine<T,TYPE extends Type<TYPE,T>,R> implements Language<Machine<
 		return states.stream().anyMatch(State::isFinal);
 	}
 	
-	
+	@Override
 	public List<R> apply(List<T> word) {
 		
 		Set<Tuple<State<T,TYPE,R>,List<R>>> states = new HashSet<>();
