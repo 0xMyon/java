@@ -47,7 +47,7 @@ public interface Sequence<THIS extends Sequence<THIS, T>, T> {
 	}
 	
 	/**
-	 * Self concatenation this.this
+	 * Self concatenation {@code this.concat(this)}
 	 * @return the squared {@link Sequence}
 	 * @see #concat(Sequence)
 	 */
