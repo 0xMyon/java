@@ -103,8 +103,8 @@ public class FiniteSet<T> implements InfiniteSet<T> {
 	}
 	
 	@Override
-	public <U, THAT extends Type<THAT, U>> THAT convertType(Type.Factory<THAT, U> factory, Function<T, U> f) {
-		return elements.stream().map(f).map(factory::summand).reduce(factory::union).orElse(factory.empty());
+	public <U, THAT extends Type<THAT, U>> THAT convertType(Type.Factory<THAT, U> factory, Function<T, U> function) {
+		return factory.union(elements.stream().map(function.andThen(factory::summand)));
 	}
 	
 
