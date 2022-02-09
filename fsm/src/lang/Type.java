@@ -18,25 +18,25 @@ import java.util.stream.Stream;
 public interface Type<THIS extends Type<THIS, T>, T> {
 
 	/**
-	 * @return the union {@link Type} this || that
+	 * @return the union {@link Type} {@code this | that}
 	 */
 	THIS unite(final THIS that);
 	
 	/**
-	 * @return the complement {@link Type} ~this
+	 * @return the complement {@link Type} {@code ~this}
 	 */
 	THIS complement();
 	
 	
 	/**
-	 * @return the intersection {@link Type} this && that
+	 * @return the intersection {@link Type} {@code this & that}
 	 */
 	default THIS intersect(final THIS that) {
 		return this.complement().unite(that.complement()).complement();
 	}
 	
 	/**
-	 * @return the difference {@link Type} this - that
+	 * @return the difference {@link Type} {@code this - that}
 	 */
 	default THIS minus(final THIS that) {
 		return this.complement().unite(that).complement();
