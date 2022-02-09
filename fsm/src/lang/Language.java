@@ -29,6 +29,10 @@ public interface Language<THIS extends Language<THIS, T>, T> extends Type<THIS, 
 	THIS optional();
 
 
+	/**
+	 * @return parallel {@link Language} {@code this || that}
+	 */
+	THIS parallel(THIS that);
 
 	/**
 	 * @return the kleene-hull {@link Language} {@code this*}
@@ -55,6 +59,15 @@ public interface Language<THIS extends Language<THIS, T>, T> extends Type<THIS, 
 		@Override
 		public default THIS summand(List<T> that) {
 			return sequence(that.stream().map(this::factor));
+		}
+		
+		@SuppressWarnings("unchecked")
+		default THIS parallel(THIS... that) {
+			return parallel(Stream.of(that));
+		}
+		
+		default THIS parallel(Stream<THIS> stream) {
+			return stream.reduce(epsilon(), Language::parallel);
 		}
 		
 	}

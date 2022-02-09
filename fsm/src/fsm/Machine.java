@@ -277,6 +277,7 @@ public class Machine<T,TYPE extends Type<TYPE,T>,R> implements Language<Machine<
 		return operation(that, (a,b) -> a ^ b);
 	}
 	
+	@Override
 	public Machine<T, TYPE, R> parallel(final Machine<T, TYPE, R> that) {
 		final Machine<T,TYPE,R> result = new Machine<>(factory, this.hasEpsilon() && that.hasEpsilon());
 		final Map<Tuple<State<T,TYPE,R>,State<T,TYPE,R>>, State<T,TYPE,R>> map = result.include(

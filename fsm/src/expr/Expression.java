@@ -41,6 +41,11 @@ public abstract class Expression<T> implements Language<Expression<T>,T> {
 		return Reverse.of(this);
 	}
 	
+	@Override
+	public Expression<T> parallel(Expression<T> that) {
+		return Parallel.of(this, that);
+	}
+	
 	private final Machine.Factory<T, InfiniteSet<T>, Void> MACHINE = new Machine.Factory<>(new InfiniteSet.Factory<T>());
 	
 	
@@ -119,6 +124,7 @@ public abstract class Expression<T> implements Language<Expression<T>,T> {
 		R handle(Complement<T> that);
 		R handle(Element<T> that);
 		R handle(Itteration<T> that);
+		R handle(Parallel<T> that);
 		R handle(Reverse<T> that);
 		R handle(Sequence<T> that);
 		R handle(Union<T> that);
