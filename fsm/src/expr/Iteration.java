@@ -4,19 +4,19 @@ import java.util.function.Function;
 
 import lang.Language;
 
-public class Itteration<T> extends Expression<T> {
+public class Iteration<T> extends Expression<T> {
 
 	private final Expression<T> base;
 	
 	static <T> Expression<T> of(Expression<T> that) {
-		if (that instanceof Itteration) {
+		if (that instanceof Iteration) {
 			return that;
 		} else {
-			return new Itteration<>(that);
+			return new Iteration<>(that);
 		}
 	}
 	
-	private Itteration(Expression<T> base) {
+	private Iteration(Expression<T> base) {
 		this.base = base;
 	}
 	
