@@ -21,7 +21,7 @@ public abstract class Expression<T> implements Language<Expression<T>,T> {
 
 	@Override
 	public Expression<T> iterate() {
-		return Itteration.of(this);
+		return Iteration.of(this);
 	}
 
 	@Override
@@ -122,7 +122,7 @@ public abstract class Expression<T> implements Language<Expression<T>,T> {
 
 		R handle(Complement<T> that);
 		R handle(Element<T> that);
-		R handle(Itteration<T> that);
+		R handle(Iteration<T> that);
 		R handle(Parallel<T> that);
 		R handle(Reverse<T> that);
 		R handle(Sequence<T> that);
