@@ -25,6 +25,11 @@ public class Element<T> extends Expression<T> {
 	public String toString() {
 		return element.toString();
 	}
+	
+	@Override
+	public <R> R accept(Visitor<T, R> visitor) {
+		return visitor.handle(this);
+	}
 
 
 }

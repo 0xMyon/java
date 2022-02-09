@@ -40,4 +40,9 @@ public class Sequence<T> extends Expression<T> {
 		return "("+elements.stream().map(Object::toString).reduce((a,b) -> a+", "+b).orElse("")+")";
 	}
 	
+	@Override
+	public <R> R accept(Visitor<T, R> visitor) {
+		return visitor.handle(this);
+	}
+	
 }

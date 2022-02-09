@@ -29,4 +29,9 @@ public class Itteration<T> extends Expression<T> {
 		return base.toString()+"+";
 	}
 	
+	@Override
+	public <R> R accept(Visitor<T, R> visitor) {
+		return visitor.handle(this);
+	}
+	
 }

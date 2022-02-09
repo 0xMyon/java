@@ -27,5 +27,11 @@ public class Reverse<T> extends Expression<T> {
 	public <U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
 		return reverse.convertLanguage(factory, function).reverse();
 	}
+	
+	@Override
+	public <R> R accept(Visitor<T, R> visitor) {
+		return visitor.handle(this);
+	}
+
 
 }

@@ -113,4 +113,21 @@ public abstract class Expression<T> implements Language<Expression<T>,T> {
 		return convert().isEpsilon();
 	}
 
+	
+	interface Visitor<T, R> {
+
+		R handle(Complement<T> that);
+		R handle(Element<T> that);
+		R handle(Itteration<T> that);
+		R handle(Reverse<T> that);
+		R handle(Sequence<T> that);
+		R handle(Union<T> that);
+		
+		
+	}
+	
+	public abstract <R> R accept(Visitor<T, R> visitor);
+	
+	
+	
 }

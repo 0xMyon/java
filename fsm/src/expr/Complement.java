@@ -29,6 +29,11 @@ public class Complement<T> extends Expression<T> {
 		return "!["+complement.toString()+"]";
 	}
 
+	@Override
+	public <R> R accept(Visitor<T, R> visitor) {
+		return visitor.handle(this);
+	}
+
 	
 
 
