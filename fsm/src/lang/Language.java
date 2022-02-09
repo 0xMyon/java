@@ -19,19 +19,19 @@ public interface Language<THIS extends Language<THIS, T>, T> extends Type<THIS, 
 	Factory<THIS, T> factory();
 
 	/**
-	 * @return the iterated {@link Language} this+
+	 * @return the iterated {@link Language} {@code this+}
 	 */
 	THIS iterate();
 
 	/**
-	 * @return the optional {@link Language} this?
+	 * @return the optional {@link Language} {@code this?}
 	 */
 	THIS optional();
 
 
 
 	/**
-	 * @return the kleene-hull {@link Language} this*
+	 * @return the kleene-hull {@link Language} {@code this*}
 	 */
 	default THIS star() {
 		return iterate().optional();
