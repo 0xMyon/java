@@ -1,4 +1,4 @@
-package lang;
+package set;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -7,7 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FiniteSet<T> implements InfiniteSet<T> {
+public class FiniteSet<T> implements lang.Set<FiniteSet<T>, T> {
 
 	private final Set<T> elements = new HashSet<>();
 	
@@ -17,21 +17,6 @@ public class FiniteSet<T> implements InfiniteSet<T> {
 	}
 	public FiniteSet(Stream<T> stream) {
 		elements.addAll(stream.collect(Collectors.toSet()));
-	}
-	
-	@Override
-	public InfiniteSet<T> unite(InfiniteSet<T> that) {
-		return that.accept(new Visitor<T,InfiniteSet<T>>(){
-			@Override
-			public InfiniteSet<T> handle(FiniteSet<T> that) {
-				return unite(that);
-			}
-			@Override
-			public InfiniteSet<T> handle(ComplementSet<T> that) {
-				return that.unite(FiniteSet.this);
-			}
-			
-		});
 	}
 	
 	public FiniteSet<T> unite(FiniteSet<T> that) {
@@ -47,33 +32,8 @@ public class FiniteSet<T> implements InfiniteSet<T> {
 	}
 
 	@Override
-	public InfiniteSet<T> complement() {
-		return new ComplementSet<>(this);
-	}
-
-	@Override
 	public boolean contains(T that) {
 		return elements.contains(that);
-	}
-
-	@Override
-	public boolean containsAll(InfiniteSet<T> that) {
-		return that.accept(new Visitor<T,Boolean>(){
-			@Override
-			public Boolean handle(FiniteSet<T> that) {
-				return elements.containsAll(that.elements);
-			}
-			@Override
-			public Boolean handle(ComplementSet<T> that) {
-				return false;
-			}
-			
-		});
-	}
-
-	@Override
-	public <R> R accept(Visitor<T, R> visitor) {
-		return visitor.handle(this);
 	}
 	
 	public String toString() {
@@ -91,21 +51,39 @@ public class FiniteSet<T> implements InfiniteSet<T> {
 		return false;
 	}
 	
-	
 	@Override
 	public boolean isEmpty() {
 		return elements.isEmpty();
 	}
 	
 	@Override
-	public boolean isFinite() {
-		return true;
+	public FiniteSet<T> THIS() {
+		return this;
 	}
 	
 	@Override
-	public <U, THAT extends Type<THAT, U>> THAT convertType(Type.Factory<THAT, U> factory, Function<T, U> function) {
-		return factory.union(elements.stream().map(function.andThen(factory::summand)));
+	public boolean containsAll(FiniteSet<T> that) {
+		return elements.containsAll(that.elements);
 	}
 	
+	@Override
+	public <U, THAT extends lang.Set<THAT, U>> THAT convertSet(lang.Set.Factory<THAT, U> factory, Function<T, U> function) {
+		return factory.union(elements.stream().map(x -> factory.summand(function.apply(x))));
+	}
+	
+	
+	public static class Factory<T> implements lang.Set.Factory<FiniteSet<T>, T> {
+
+		@Override
+		public FiniteSet<T> empty() {
+			return new FiniteSet<>();
+		}
+
+		@Override
+		public FiniteSet<T> summand(T that) {
+			return new FiniteSet<>(that);
+		}
+		
+	}
 
 }

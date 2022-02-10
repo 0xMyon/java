@@ -4,8 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.stream.Stream;
 
-import lang.InfiniteSet;
 import lang.Language;
+import set.ComplementSet;
+import set.FiniteSet;
 
 class Test {
 	
@@ -20,9 +21,9 @@ class Test {
 		CharMachine b = new CharMachine('b');
 		CharMachine c = new CharMachine('c');
 		
-		Machine<Character, InfiniteSet<Character>, Void> a_b = a.unite(b);
-		Machine<Character, InfiniteSet<Character>, Void> ab = a.concat(b);
-		Machine<Character, InfiniteSet<Character>, Void> ba = b.concat(a);
+		Machine<Character, ComplementSet<FiniteSet<Character>, Character>, Void> a_b = a.unite(b);
+		Machine<Character, ComplementSet<FiniteSet<Character>, Character>, Void> ab = a.concat(b);
+		Machine<Character, ComplementSet<FiniteSet<Character>, Character>, Void> ba = b.concat(a);
 		
 		//Machine<Character, InfiniteSet<Character>, Void> a_plus = a.iterate();
 		//Machine<Character, InfiniteSet<Character>, Void> a_plus_2 = a.iterate().iterate();
@@ -41,7 +42,7 @@ class Test {
 		assertTrue(a_b.concat(a_b).containsAll(ab.unite(ba)));
 		assertFalse(ab.unite(ba).containsAll(a_b.concat(a_b)));
 		
-		Machine<Character, InfiniteSet<Character>, Void> A = a.complement();
+		Machine<Character, ComplementSet<FiniteSet<Character>, Character>, Void> A = a.complement();
 		
 		System.out.println("!a := "+A);
 		
@@ -105,10 +106,10 @@ class Test {
 		CharMachine a = new CharMachine('a');
 		CharMachine b = new CharMachine('b');
 		
-		Machine<Character, InfiniteSet<Character>, Void> ab = a.concat(b);
-		Machine<Character, InfiniteSet<Character>, Void> ba = b.concat(a);
+		Machine<Character, ComplementSet<FiniteSet<Character>, Character>, Void> ab = a.concat(b);
+		Machine<Character, ComplementSet<FiniteSet<Character>, Character>, Void> ba = b.concat(a);
 		
-		Machine<Character, InfiniteSet<Character>, Void> abR = ab.reverse();
+		Machine<Character, ComplementSet<FiniteSet<Character>, Character>, Void> abR = ab.reverse();
 		
 		assertTrue(abR.isEqual(ba));
 		
@@ -147,7 +148,7 @@ class Test {
 		
 		System.out.println("test()");
 
-		Machine<Character, InfiniteSet<Character>, Void> e = new CharMachine(true);
+		Machine<Character, ComplementSet<FiniteSet<Character>, Character>, Void> e = new CharMachine(true);
 		
 		CharMachine a = new CharMachine('a');
 		CharMachine b = new CharMachine('b');
@@ -156,11 +157,11 @@ class Test {
 		
 		assertTrue(a.unite(e).isEqual(e.unite(a)));
 				
-		Machine<Character, InfiniteSet<Character>, Void> ab = a.concat(b);
-		Machine<Character, InfiniteSet<Character>, Void> a_b = a.unite(b);
+		Machine<Character, ComplementSet<FiniteSet<Character>, Character>, Void> ab = a.concat(b);
+		Machine<Character, ComplementSet<FiniteSet<Character>, Character>, Void> a_b = a.unite(b);
 		
-		Machine<Character, InfiniteSet<Character>, Void> a_ = a.optional();
-		Machine<Character, InfiniteSet<Character>, Void> aa = a.iterate();
+		Machine<Character, ComplementSet<FiniteSet<Character>, Character>, Void> a_ = a.optional();
+		Machine<Character, ComplementSet<FiniteSet<Character>, Character>, Void> aa = a.iterate();
 		
 		testAll(a, Stream.of("a"), true);
 		testAll(a, Stream.of("", "b", "ab", "ba", "aa", "bb"), false);

@@ -4,8 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import fsm.Machine;
-import lang.InfiniteSet;
 import lang.Language;
+import set.ComplementSet;
+import set.FiniteSet;
 
 public abstract class Expression<T> implements Language<Expression<T>,T> {
 
@@ -45,12 +46,12 @@ public abstract class Expression<T> implements Language<Expression<T>,T> {
 		return Parallel.of(this, that);
 	}
 	
-	private final Machine.Factory<T, InfiniteSet<T>, Void> MACHINE = new Machine.Factory<>(new InfiniteSet.Factory<T>());
+	private final Machine.Factory<T, ComplementSet<FiniteSet<T>, T>, Void> MACHINE = new Machine.Factory<>(new ComplementSet.Factory<>(new FiniteSet.Factory<>()));
 	
 	
-	Optional<Machine<T, InfiniteSet<T>, Void>> machine = Optional.empty();
+	Optional<Machine<T, ComplementSet<FiniteSet<T>, T>, Void>> machine = Optional.empty();
 	
-	Machine<T, InfiniteSet<T>, Void> convert() {
+	Machine<T, ComplementSet<FiniteSet<T>, T>, Void> convert() {
 		if (machine.isEmpty())
 			machine = Optional.of(convertType(MACHINE));
 		return machine.get();
