@@ -15,17 +15,18 @@ import java.util.stream.Stream;
  * @param <THIS> underlying implementation type
  * @param <T> underlying element type
  */
-public interface Type<THIS extends Type<THIS, T>, T> {
+public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 
-	/**
-	 * @return the union {@link Type} {@code this | that}
-	 */
-	THIS unite(final THIS that);
+	
 	
 	/**
 	 * @return the complement {@link Type} {@code ~this}
 	 */
 	THIS complement();
+	
+	default THIS complement(boolean complement) {
+		return complement ? complement() : THIS();
+	}
 	
 	
 	/**
@@ -42,41 +43,11 @@ public interface Type<THIS extends Type<THIS, T>, T> {
 		return this.complement().unite(that).complement();
 	}
 	
-	/**
-	 * @param that <T> to be tested
-	 * @return true, if element is contained
-	 */
-	boolean contains(final T that);
-	
-	/**
-	 * @param that {@link Type} to be tested
-	 * @return true, if that is contained
-	 */
-	boolean containsAll(final THIS that);
-	
-	/**
-	 * @param that
-	 * @return true, if both types are equal
-	 */
-	default boolean isEqual(final THIS that) {
-		return this.containsAll(that) && that.containsAll(THIS());
-	}
-	
-	/**
-	 * @return true, if the type is empty
-	 * @see Factory#empty()
-	 */
-	boolean isEmpty();
 	
 	/**
 	 * @return true, if the {@link Type} contains a finite set of elements
 	 */
 	boolean isFinite();
-	
-	/**
-	 * @return this
-	 */
-	THIS THIS();
 	
 	/**
 	 * @return {@link Factory} associated with this {@link Type}
@@ -85,22 +56,7 @@ public interface Type<THIS extends Type<THIS, T>, T> {
 	
 	
 	
-	interface Factory<THIS extends Type<THIS, T>, T> {
-		
-		/**
-		 * @return the empty {@link Type}
-		 * @see Type#isEmpty()
-		 */
-		THIS empty();
-		
-		@SuppressWarnings("unchecked")
-		default THIS union(final THIS... ths) {
-			return union(Stream.of(ths));
-		}
-		
-		default THIS union(Stream<THIS> stream) {
-			return stream.reduce(empty(), Type::unite);
-		}
+	interface Factory<THIS extends Type<THIS, T>, T> extends lang.Set.Factory<THIS, T> {
 		
 		/**
 		 * @return the {@link Type} that contains all other types
@@ -109,11 +65,6 @@ public interface Type<THIS extends Type<THIS, T>, T> {
 			return empty().complement();
 		}
 
-		/**
-		 * @param that
-		 * @return a {@link Type} from underlying elements
-		 */
-		THIS summand(T that);
 	}
 
 	
@@ -123,6 +74,10 @@ public interface Type<THIS extends Type<THIS, T>, T> {
 		return convertType(factory, Function.identity());
 	}
 
+	@Override
+	default public <U, THAT extends lang.Set<THAT, U>> THAT convertSet(lang.Set.Factory<THAT, U> factory, Function<T, U> function) {
+		throw new UnsupportedOperationException();
+	}
 	
 	/**
 	 * @param types
