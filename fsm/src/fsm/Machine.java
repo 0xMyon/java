@@ -188,20 +188,20 @@ public class Machine<T,TYPE extends Type<TYPE,T>,R> implements Language<Machine<
 			map.get(Tuple.right(that.initial()))
 		);
 
-		// special case when one epsilon is involved
-		if (this.epsilon && !that.epsilon) {
+		// special case when epsilon is involved
+		if (this.epsilon) {
 			// I -> I2
 			result.transition(
 				result.initial(), 
 				map.get(Tuple.right(that.initial()))
 			);
-		} else if (that.epsilon && !this.epsilon) {
+		} 
+		if (that.epsilon) {
 			// F1 -> F
 			result.transition(
 				this.finals().stream().map(Tuple::left).map(map::get).collect(Collectors.toSet()), 
 				result.state(true)
 			);
-			
 		}
 		
 		return result.determinize();
