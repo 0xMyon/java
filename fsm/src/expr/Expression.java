@@ -53,11 +53,10 @@ public abstract class Expression<T> implements Language<Expression<T>,T> {
 	
 	Machine<T, ComplementSet<FiniteSet<T>, T>, Void> convert() {
 		if (machine.isEmpty())
-			machine = Optional.of(convertType(MACHINE));
+			machine = Optional.of(convertLanguage(MACHINE));
 		return machine.get();
 	}
-	
-	
+		
 	@Override
 	public boolean contains(List<T> that) {
 		return convert().contains(that);
