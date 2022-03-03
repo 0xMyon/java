@@ -20,6 +20,12 @@ public interface Set<THIS extends Set<THIS, T>, T> extends Container<THIS, T>, H
 	 */
 	THIS minus(final THIS that);
 	
+	/**
+	 * @return the difference {@code that - this}
+	 */
+	default THIS removed(final THIS that) {
+		return that.minus(THIS());
+	}
 	
 	/**
 	 * @return true, if and only if there exists no element that is contained on both {@link Set}
