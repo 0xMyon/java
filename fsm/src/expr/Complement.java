@@ -1,8 +1,10 @@
 package expr;
 
+import java.util.List;
 import java.util.function.Function;
 
 import lang.Language;
+import lang.Type;
 
 public class Complement<T> extends Expression<T> {
 
@@ -23,6 +25,11 @@ public class Complement<T> extends Expression<T> {
 	@Override
 	public <U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
 		return complement.convertLanguage(factory, function).complement();
+	}
+	
+	@Override
+	public <U, THAT extends Type<THAT, U>> THAT convertType(Type.Factory<THAT, U> factory, Function<List<T>, U> function) {
+		return complement.convertType(factory, function).complement();
 	}
 	
 	public String toString() {
