@@ -1,13 +1,13 @@
 package lambda.reducible;
 
 import lambda.Reducible;
-import lambda.Type;
 
-public interface IAbstraction<V, T> extends Reducible<T> {
+public interface IAbstraction extends Reducible {
 
-	Reducible<T> apply(Reducible<V> parameter);
+	Reducible apply(Reducible parameter);
 
-	Reducible<Type<V>> domain();
+	Reducible domain();
 	
-	IAbstraction<?,Type<T>> type();
+	IAbstraction type();
+	
 }

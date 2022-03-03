@@ -13,7 +13,7 @@ import lambda.reducible.Variable;
  *
  * @param <T>
  */
-public interface Reducible<T> {
+public interface Reducible {
 
 	/**
 	 * replaces all instances of {@code variable} with {@code term} recursively
@@ -22,27 +22,27 @@ public interface Reducible<T> {
 	 * @param term to be replaced with
 	 * @return a new {@link Reducible} with replacement applied
 	 */
-	<X> Reducible<T> replace(final Variable<X> variable, final Reducible<X> term);
+	<X> Reducible replace(final Variable variable, final Reducible term);
 
 	/**
 	 * perform many step beta-reduction
 	 * @return {@code this} in beta-normal form
 	 */
-	Reducible<T> reduce();
+	Reducible reduce();
 
 	/**
 	 * @param that {@link Reducible} to be mapped to
 	 * @param context of {@link Variable}s that are already mapped
 	 * @return true, if there exists a mapping to {@code that} under the given {@code context}
 	 */
-	boolean isMapping(final Reducible<?> that, final Map<Variable<?>, Reducible<?>> context);
+	boolean isMapping(final Reducible that, final Map<Variable, Reducible> context);
 
 	/**
 	 * @param that {@link Reducible} to be mapped to
 	 * @return true, of there exists a mapping to {@code that} under an empty context
 	 * @see #isMapping(Reducible, Map)
 	 */
-	default boolean isMapping(final Reducible<?> that) {
+	default boolean isMapping(final Reducible that) {
 		return isMapping(that, new HashMap<>());
 	}
 	
@@ -51,7 +51,7 @@ public interface Reducible<T> {
 	 * @param that <T> to be compared to
 	 * @return true, if {@code this} and {@code that} are structural equal
 	 */
-	default boolean isEqual(final Reducible<?> that) {
+	default boolean isStructureEqual(final Reducible that) {
 		return isMapping(that) && that.isMapping(this);
 	}
 	
@@ -59,8 +59,8 @@ public interface Reducible<T> {
 	 * @param that {@link Reducible}
 	 * @return true, if {@code this} and {@code that} are beta-equivalent
 	 */
-	default boolean isBetaEqual(final Reducible<T> that) {
-		return this.reduce().isEqual(that.reduce());
+	default boolean isBetaEqual(final Reducible that) {
+		return this.reduce().isStructureEqual(that.reduce());
 	}
 	
 	/**
@@ -68,9 +68,14 @@ public interface Reducible<T> {
 	 * @throws AssertionError on none-existing type
 	 * @see Constant#type()
 	 */
-	Reducible<Type<T>> type() throws AssertionError;
+	Reducible type() throws AssertionError;
+	
+	boolean contains(Variable variable);
+
+	default boolean containsAll(Reducible type) {
+		return isMapping(type);
+	}
 	
 	
-	boolean contains(Variable<?> variable);
 
 }

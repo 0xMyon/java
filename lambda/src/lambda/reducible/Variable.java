@@ -3,22 +3,21 @@ package lambda.reducible;
 import java.util.Map;
 
 import lambda.Reducible;
-import lambda.Type;
 
-public class Variable<T> implements Reducible<T> {
+public class Variable implements Reducible {
 
 	private static int ID = 0;
 	
 	private final int id = ID++;
-	private final Reducible<Type<T>> type;
+	private final Reducible type;
 	
 	
-	public Variable(Reducible<Type<T>> type) {
+	public Variable(Reducible type) {
 		this.type = type;
 	}
 	
 	@Override
-	public Reducible<Type<T>> type() {
+	public Reducible type() {
 		return type;
 	}
 	
@@ -26,19 +25,18 @@ public class Variable<T> implements Reducible<T> {
 		return Integer.toString(id);
 	}
 
-	@SuppressWarnings("unchecked") // if this == variable => T == X
 	@Override
-	public <X> Reducible<T> replace(Variable<X> variable, Reducible<X> term) {
-		return equals(variable) ? (Reducible<T>)term : this;
+	public <X> Reducible replace(Variable variable, Reducible term) {
+		return equals(variable) ? (Reducible)term : this;
 	}
 
 	@Override
-	public Reducible<T> reduce() {
+	public Reducible reduce() {
 		return this;
 	}
 
 	@Override
-	public boolean isMapping(Reducible<?> term, Map<Variable<?>, Reducible<?>> map) {
+	public boolean isMapping(Reducible term, Map<Variable, Reducible> map) {
 		try {
 			if (map.containsKey(this)) {
 				return map.get(this).equals(term);
@@ -64,7 +62,7 @@ public class Variable<T> implements Reducible<T> {
 	}
 
 	@Override
-	public boolean contains(Variable<?> variable) {
+	public boolean contains(Variable variable) {
 		return equals(variable) || type.contains(variable);
 	}
 	
