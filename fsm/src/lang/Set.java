@@ -3,26 +3,28 @@ package lang;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import lang.Type.Factory;
-
 public interface Set<THIS extends Set<THIS, T>, T> extends Container<THIS, T>, Hierarchy<THIS> {
 
 	/**
-	 * @return the union {@link Type} {@code this | that}
+	 * @return the union {@code this | that}
 	 */
 	THIS unite(final THIS that);
 	
 	/**
-	 * @return the intersection {@link Type} {@code this & that}
+	 * @return the intersection {@code this & that}
 	 */
 	THIS intersect(final THIS that);
 	
 	/**
-	 * @return the difference {@link Type} {@code this - that}
+	 * @return the difference {@code this - that}
 	 */
 	THIS minus(final THIS that);
 	
 	
+	/**
+	 * @return true, if and only if there exists no element that is contained on both {@link Set}
+	 * @see #contains(Object)
+	 */
 	default boolean isDisjunct(final THIS that) {
 		return this.intersect(that).isEmpty();
 	}
@@ -52,11 +54,16 @@ public interface Set<THIS extends Set<THIS, T>, T> extends Container<THIS, T>, H
 	}
 	
 	
+	/**
+	 * Factory used to create a {@link Set}
+	 * @param <THIS> type of the {@link Set}
+	 * @param <T> type of the elements of the {@link Set}
+	 */
 	interface Factory<THIS extends Set<THIS, T>, T> {
 		
 		/**
-		 * @return the empty {@link Type}
-		 * @see Type#isEmpty()
+		 * @return the empty {@link Set}
+		 * @see Set#isEmpty()
 		 */
 		THIS empty();
 		
@@ -72,7 +79,7 @@ public interface Set<THIS extends Set<THIS, T>, T> extends Container<THIS, T>, H
 
 		/**
 		 * @param that
-		 * @return a {@link Type} from underlying elements
+		 * @return a {@link Set} from underlying elements
 		 */
 		THIS summand(T that);
 		
