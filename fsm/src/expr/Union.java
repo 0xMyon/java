@@ -6,43 +6,31 @@ import java.util.function.Function;
 
 import lang.Language;
 
-public class Union<T> extends Expression<T> {
+public class Union<T> extends Composite<T> {
 
-	private final Set<Expression<T>> elements;
 	
 	@SafeVarargs
-	static <T> Expression<T> of(Expression<T>... elements) {
-		Set<Expression<T>> set = new HashSet<>();
-		for(Expression<T> e : elements) {
-			if (e instanceof Union) {
-				set.addAll(((Union<T>)e).elements);
-			} else {
-				set.add(e);
-			}
-		}
-		if (set.size() == 1)
-			return set.iterator().next();
-		else 
-			return new Union<>(set);
+	public static <T> Expression<T> of(Expression<T>... elements) {
+		return Composite.of(Union.class, new HashSet<Expression<T>>(), Union::new, elements);
 	}
 	
 
 	private Union(Set<Expression<T>> set) {
-		this.elements = set;
+		super(set);
 	}
 	
 	@Override
 	public boolean isEmpty() {
-		return elements.isEmpty();
+		return elements().isEmpty();
 	}
 
 	@Override
 	public <U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
-		return factory.union(elements.stream().map(x -> x.convertLanguage(factory, function)));
+		return factory.union(elements().stream().map(x -> x.convertLanguage(factory, function)));
 	}
 	
 	public String toString() {
-		return "{"+elements.stream().map(Object::toString).reduce((a,b) -> a+", "+b).orElse("")+"}";
+		return "{"+elements().stream().map(Object::toString).reduce((a,b) -> a+", "+b).orElse("")+"}";
 	}
 	
 	
