@@ -114,6 +114,7 @@ class Test {
 				.isBetaEqual(new Application(new Variable(left.type()), new Variable(I)))
 		);
 		
+		assertTrue(ID.andThen(ID).isBetaEqual(ID));
 		
 		
 	}

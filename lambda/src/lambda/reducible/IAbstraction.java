@@ -10,4 +10,8 @@ public interface IAbstraction extends Reducible {
 	
 	IAbstraction type();
 	
+	default IAbstraction andThen(IAbstraction that) {
+		return new Abstraction(domain(), x -> that.apply(this.apply(x)));
+	}
+	
 }
