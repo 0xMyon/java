@@ -2,14 +2,15 @@ package set;
 
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FiniteSet<T> implements lang.Set<FiniteSet<T>, T> {
+import lang.Set;
 
-	private final Set<T> elements = new HashSet<>();
+public class FiniteSet<T> implements Set<FiniteSet<T>, T> {
+
+	private final HashSet<T> elements = new HashSet<>();
 	
 	@SafeVarargs
 	public FiniteSet(T...ts) {
@@ -67,12 +68,12 @@ public class FiniteSet<T> implements lang.Set<FiniteSet<T>, T> {
 	}
 	
 	@Override
-	public <U, THAT extends lang.Set<THAT, U>> THAT convertSet(lang.Set.Factory<THAT, U> factory, Function<T, U> function) {
+	public <THAT extends Set<THAT, U>, U> THAT convertSet(Set.Factory<THAT, U> factory, Function<T, U> function) {
 		return factory.union(elements.stream().map(x -> factory.summand(function.apply(x))));
 	}
 	
 	
-	public static class Factory<T> implements lang.Set.Factory<FiniteSet<T>, T> {
+	public static class Factory<T> implements Set.Factory<FiniteSet<T>, T> {
 
 		@Override
 		public FiniteSet<T> empty() {

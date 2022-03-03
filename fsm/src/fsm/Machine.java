@@ -584,7 +584,7 @@ public class Machine<T,TYPE extends Type<TYPE,T>,R> implements Language<Machine<
 	}
 
 	@Override
-	public <U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T,U> function) {
+	public <THAT extends Language<THAT, U>, U> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T,U> function) {
 		// TODO 
 		final Machine<List<U>, THAT, R> result = new Machine<>(factory, hasEpsilon());
 		

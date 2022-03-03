@@ -34,8 +34,23 @@ public interface Set<THIS extends Set<THIS, T>, T> extends Container<THIS, T>, H
 	boolean isEmpty();
 	
 	
+	/**
+	 * @param <THAT> target type of the {@link Set}
+	 * @param <U> element target type of the {@link Set}
+	 * @param factory that is used for conversion between sets
+	 * @param function that is used for conversion between elements
+	 * @return an isomorphic {@link Set} of a different type
+	 * @throws UnsupportedOperationException, if the underlying {@link Set} is not convertible
+	 */
+	<THAT extends Set<THAT, U>, U> THAT convertSet(final Factory<THAT, U> factory, final Function<T, U> function) throws UnsupportedOperationException;
 	
-	<U, THAT extends Set<THAT, U>> THAT convertSet(Factory<THAT, U> factory, Function<T, U> function);
+	/**
+	 * @see #convertSet(Factory, Function)
+	 */
+	default <THAT extends Set<THAT, T>> THAT convertSet(final Factory<THAT, T> factory) {
+		return convertSet(factory, Function.identity());
+	}
+	
 	
 	interface Factory<THIS extends Set<THIS, T>, T> {
 		

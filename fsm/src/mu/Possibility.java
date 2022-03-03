@@ -15,7 +15,7 @@ public class Possibility<T> implements Mu<T> {
 	}
 	
 	@Override
-	public <U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
+	public <THAT extends Language<THAT, U>, U> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
 		// TODO Auto-generated method stub
 		return factory.factor(function.apply(x)).concat(term.convertLanguage(factory, function));
 	}

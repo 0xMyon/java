@@ -21,7 +21,7 @@ public class Iteration<T> extends Expression<T> {
 	}
 	
 	@Override
-	public <U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
+	public <THAT extends Language<THAT, U>, U> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
 		return base.convertLanguage(factory, function).iterate();
 	}
 	

@@ -21,7 +21,7 @@ public class Alternative<T> implements Mu<T> {
 	}
 
 	@Override
-	public <U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
+	public <THAT extends Language<THAT, U>, U> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
 		return factory.union(elements.stream().map(x -> x.convertLanguage(factory, function)));
 	}
 

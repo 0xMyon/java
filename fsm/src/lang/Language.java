@@ -78,7 +78,7 @@ public interface Language<THIS extends Language<THIS, T>, T> extends Type<THIS, 
 	 * @param factory
 	 * @return
 	 */
-	<U, THAT extends Language<THAT, U>> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T,U> function);
+	<THAT extends Language<THAT, U>, U> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T,U> function);
 		
 	default <THAT extends Language<THAT, T>> THAT convertLanguage(Language.Factory<THAT, T> factory) {
 		return convertLanguage(factory, Function.identity());
@@ -87,7 +87,7 @@ public interface Language<THIS extends Language<THIS, T>, T> extends Type<THIS, 
 	
 	
 	@Override
-	default <U, THAT extends Type<THAT, U>> THAT convertType(Type.Factory<THAT, U> factory, Function<List<T>, U> function) {
+	default <THAT extends Type<THAT, U>,U> THAT convertType(Type.Factory<THAT, U> factory, Function<List<T>, U> function) {
 		throw new UnsupportedOperationException();
 	}
 	

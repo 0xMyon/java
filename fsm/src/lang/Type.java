@@ -68,14 +68,14 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 	}
 
 	
-	<U, THAT extends Type<THAT, U>> THAT convertType(Type.Factory<THAT, U> factory, Function<T,U> function);
+	<THAT extends Type<THAT, U>, U> THAT convertType(Type.Factory<THAT, U> factory, Function<T,U> function);
 
 	default <THAT extends Type<THAT, T>> THAT convertType(Type.Factory<THAT, T> factory) {
 		return convertType(factory, Function.identity());
 	}
 
 	@Override
-	default public <U, THAT extends lang.Set<THAT, U>> THAT convertSet(lang.Set.Factory<THAT, U> factory, Function<T, U> function) {
+	default public <THAT extends lang.Set<THAT, U>, U> THAT convertSet(lang.Set.Factory<THAT, U> factory, Function<T, U> function) {
 		throw new UnsupportedOperationException();
 	}
 	

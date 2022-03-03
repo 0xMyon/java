@@ -128,8 +128,16 @@ public class ComplementSet<SET extends Set<SET,T>, T> implements Type<Complement
 
 
 	@Override
-	public <U, THAT extends Type<THAT, U>> THAT convertType(lang.Type.Factory<THAT, U> factory,	Function<T, U> function) {
+	public <THAT extends Type<THAT, U>, U> THAT convertType(Type.Factory<THAT, U> factory,	Function<T, U> function) {
 		return set.convertSet(factory, function).complement(complement);
+	}
+	
+	@Override
+	public <THAT extends Set<THAT, U>, U> THAT convertSet(Set.Factory<THAT, U> factory,	Function<T, U> function) {
+		if (!complement)
+			return set.convertSet(factory, function);
+		else
+			throw new UnsupportedOperationException();
 	}
 	
 }
