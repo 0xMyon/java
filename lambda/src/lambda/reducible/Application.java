@@ -1,5 +1,6 @@
 package lambda.reducible;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import lambda.Reducible;
@@ -10,7 +11,12 @@ public class Application implements Reducible {
 	private final Reducible parameter;
 		
 	public String toString() {
-		return function.toString()+"("+parameter.toString()+")";
+		return toString(new HashMap<>());
+	}
+	
+	@Override
+	public String toString(Map<Variable, String> names) {
+		return function.toString(names)+"("+parameter.toString(names)+")";
 	}
 	
 	public Application(Reducible function, Reducible parameter) {

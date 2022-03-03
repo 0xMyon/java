@@ -76,6 +76,8 @@ public interface Reducible {
 		return isMapping(type);
 	}
 	
+	public String toString(Map<Variable, String> names);
+	
 	
 
 }

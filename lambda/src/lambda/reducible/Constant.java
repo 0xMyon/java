@@ -1,5 +1,6 @@
 package lambda.reducible;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -43,6 +44,11 @@ public class Constant implements Reducible {
 	}
 	
 	public String toString() {
+		return toString(new HashMap<>());
+	}
+	
+	@Override
+	public String toString(Map<Variable, String> names) {
 		return name;
 	}
 

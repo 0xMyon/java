@@ -1,5 +1,6 @@
 package lambda.reducible;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -55,12 +56,17 @@ public class Abstraction implements IAbstraction {
 	}
 	
 	public String toString() {
+		return toString(new HashMap<>());
+	}
+	
+	@Override
+	public String toString(Map<Variable, String> names) {
 		if (!isConstant())
-			return "λ"+variable.toString()+":"+variable.type().toString()+"."+term.toString();
+			return "λ"+variable.toString(names)+":"+variable.type().toString(names)+"."+term.toString(names);
 		else if (variable.type() instanceof Abstraction)
-			return "("+variable.type()+")->"+term;
+			return "("+variable.type().toString(names)+")->"+term.toString(names);
 		else
-			return variable.type()+"->"+term;
+			return variable.type().toString(names)+"->"+term.toString(names);
 	}
 
 	@Override
