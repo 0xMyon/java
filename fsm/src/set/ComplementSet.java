@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import lang.Set;
 import lang.Type;
+import util.BooleanOperator;
 
 public class ComplementSet<SET extends Set<SET,T>, T> implements Type<ComplementSet<SET, T>, T> {
 
@@ -26,13 +27,31 @@ public class ComplementSet<SET extends Set<SET,T>, T> implements Type<Complement
 	// !a u b 	= !(a - b)
 	// !a u !b 	= !(a & b)
 	
-	BinaryOperator<SET> op(boolean left, boolean right) {
-		return left ? right ? Set::intersect : Set::minus : right ? (a,b)->b.minus(a) : Set::unite;
-	}
-	
 	@Override
 	public ComplementSet<SET, T> unite(ComplementSet<SET, T> that) {
-		return new ComplementSet<>(this.complement || that.complement, op(this.complement, that.complement).apply(this.set, that.set));
+		return op(that, (a,b)->a||b, Set::unite, Set::removed, Set::minus, Set::intersect);
+	}
+	
+	
+	@Override
+	public ComplementSet<SET, T> intersect(ComplementSet<SET, T> that) {
+		return op(that, (a,b)->a&&b, Set::intersect, Set::minus, Set::removed, Set::unite);
+	}
+	
+	// TODO
+	/*
+	@Override
+	public ComplementSet<SET, T> minus(ComplementSet<SET, T> that) {
+		return op(that, (a,b)->!a&&b, Set::minus, Set::intersect, Set::unite, Set::removed);
+	}
+	*/
+	
+	
+	private ComplementSet<SET, T> op(ComplementSet<SET, T> that, BooleanOperator op, BinaryOperator<SET> a, BinaryOperator<SET> b, BinaryOperator<SET> c, BinaryOperator<SET> d) {
+		return new ComplementSet<>(
+			op.apply(this.complement, that.complement),
+			(this.complement ? that.complement ? d : c : that.complement ? b : a).apply(this.set, that.set)
+		);
 	}
 
 	@Override
