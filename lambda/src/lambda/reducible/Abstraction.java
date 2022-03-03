@@ -18,7 +18,7 @@ public class Abstraction implements IAbstraction {
 	}
 
 	@Override
-	public <X> Reducible replace(Variable variable, Reducible term) {
+	public Reducible replace(Variable variable, Reducible term) {
 		return new Abstraction(this.variable.type().replace(variable, term), x -> apply(x).replace(variable, term));
 	}
 

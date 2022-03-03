@@ -37,7 +37,8 @@ public class Variable implements Reducible {
 	
 
 	@Override
-	public <X> Reducible replace(Variable variable, Reducible term) {
+	public Reducible replace(Variable variable, Reducible term) {
+		// TODO check if var.type contains term
 		return equals(variable) ? (Reducible)term : this;
 	}
 

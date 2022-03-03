@@ -28,7 +28,7 @@ public class Application implements Reducible {
 	}
 	
 	@Override
-	public <X> Reducible replace(Variable variable, Reducible term) {
+	public Reducible replace(Variable variable, Reducible term) {
 		return new Application(function.replace(variable, term), parameter.replace(variable, term));
 	}
 

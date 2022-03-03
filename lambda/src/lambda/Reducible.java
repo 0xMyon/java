@@ -17,12 +17,11 @@ public interface Reducible {
 
 	/**
 	 * replaces all instances of {@code variable} with {@code term} recursively
-	 * @param <X> variant type of replacement
 	 * @param variable to be replaced
 	 * @param term to be replaced with
 	 * @return a new {@link Reducible} with replacement applied
 	 */
-	<X> Reducible replace(final Variable variable, final Reducible term);
+	Reducible replace(final Variable variable, final Reducible term);
 
 	/**
 	 * perform many step beta-reduction
