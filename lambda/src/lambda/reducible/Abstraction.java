@@ -49,8 +49,12 @@ public class Abstraction<V,T> implements IAbstraction<V,T> {
 		return variable.type();
 	}
 	
+	public boolean isConstant() {
+		return !term.contains(variable);
+	}
+	
 	public String toString() {
-		if (term.contains(variable))
+		if (!isConstant())
 			return "λ"+variable.toString()+":"+variable.type().toString()+"."+term.toString();
 		else if (variable.type() instanceof Abstraction)
 			return "("+variable.type()+")->"+term;
@@ -60,7 +64,7 @@ public class Abstraction<V,T> implements IAbstraction<V,T> {
 
 	@Override
 	public boolean contains(Variable<?> variable) {
-		return this.variable.contains(variable) || term.contains(variable);
+		return isConstant() && this.variable.contains(variable) || term.contains(variable);
 	}
 
 }
