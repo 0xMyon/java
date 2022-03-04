@@ -4,9 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import lambda.Irreducible;
 import lambda.Reducible;
 
-public class Constant implements Reducible {
+public class Constant implements Irreducible {
 
 	private final Constant type;
 	
@@ -19,17 +20,6 @@ public class Constant implements Reducible {
 	
 	public Constant(String name) {
 		this(name, null);
-	}
-	
-	
-	@Override
-	public Reducible replace(Variable variable, Reducible term) {
-		return this;
-	}
-
-	@Override
-	public Reducible reduce() {
-		return this;
 	}
 
 	@Override
