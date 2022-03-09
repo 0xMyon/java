@@ -1,23 +1,27 @@
 package expr;
 
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import lang.Language;
 import lang.Type;
 
 public class Union<T> extends Composite<T> {
 
-	
 	@SafeVarargs
 	public static <T> Expression<T> of(Expression<T>... elements) {
-		return Composite.of(Union.class, new HashSet<Expression<T>>(), Union::new, elements);
+		return of(Stream.of(elements));
+	}
+	
+	public static <T> Expression<T> of(Stream<Expression<T>> elements) {
+		return Composite.of(Union.class, elements, Union::new, Collectors.toSet());
 	}
 	
 
-	private Union(Set<Expression<T>> set) {
+	private Union(Collection<Expression<T>> set) {
 		super(set);
 	}
 	
