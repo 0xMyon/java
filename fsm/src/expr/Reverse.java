@@ -33,5 +33,4 @@ public class Reverse<T> extends Expression<T> {
 		return visitor.handle(this);
 	}
 
-
 }

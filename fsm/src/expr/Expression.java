@@ -8,7 +8,7 @@ import lang.Language;
 import set.ComplementSet;
 import set.FiniteSet;
 
-public abstract class Expression<T> implements Language<Expression<T>,T> {
+public abstract class Expression<T> implements Language<Expression<T>, T> {
 
 	@Override
 	public Expression<T> concat(Expression<T> that) {

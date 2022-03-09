@@ -42,6 +42,5 @@ public class Element<T> extends Expression<T> {
 	public <R> R accept(Visitor<T, R> visitor) {
 		return visitor.handle(this);
 	}
-
-
+	
 }
