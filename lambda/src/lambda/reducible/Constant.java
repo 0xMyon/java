@@ -7,28 +7,28 @@ import java.util.Objects;
 import lambda.Irreducible;
 import lambda.Reducible;
 
-public class Constant implements Irreducible {
+public class Constant<T> implements Irreducible<T> {
 
-	private final Constant type;
+	private final Constant<T> type;
 	
-	private final String name;
+	private final T name;
 	
-	public Constant(String name, Constant type) {
+	public Constant(T name, Constant<T> type) {
 		this.type = type;
 		this.name = name;
 	}
 	
-	public Constant(String name) {
+	public Constant(T name) {
 		this(name, null);
 	}
 
 	@Override
-	public boolean isMapping(Reducible term, Map<Variable, Reducible> map) {
+	public boolean isMapping(Reducible<T> term, Map<Variable<T>, Reducible<T>> map) {
 		return Objects.equals(this, term);
 	}
 
 	@Override
-	public Constant type() {
+	public Constant<T> type() {
 		assert Objects.nonNull(type) : "can not get type of '"+name+"'";
 		return type;
 	}
@@ -38,12 +38,12 @@ public class Constant implements Irreducible {
 	}
 	
 	@Override
-	public String toString(Map<Variable, String> names) {
-		return name;
+	public String toString(Map<Variable<T>, String> names) {
+		return name.toString();
 	}
 
 	@Override
-	public boolean contains(Variable variable) {
+	public boolean isDepending(Variable<T> variable) {
 		return false;
 	}
 

@@ -2,7 +2,7 @@ package test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.regex.Pattern;
+//import java.util.regex.Pattern;
 
 import lambda.Reducible;
 import lambda.reducible.Abstraction;
@@ -14,22 +14,22 @@ import lambda.reducible.Variable;
 class Test {
 
 	
-	Constant BOX = new Constant("◻");
-	Constant STAR = new Constant("✱", BOX);
+	Constant<String> BOX = new Constant<>("◻");
+	Constant<String> STAR = new Constant<>("✱", BOX);
 	
-	Constant I = new Constant("I", STAR);
-	Constant N0 = new Constant("0", I);
+	Constant<String> I = new Constant<>("I", STAR);
+	Constant<String> N0 = new Constant<>("0", I);
 	
 	
-	Variable T = new Variable(STAR);
+	Variable<String> T = new Variable<>(STAR);
 	
-	Abstraction id = new Abstraction(STAR, X -> new Abstraction(X, x -> x));
+	Abstraction<String> id = new Abstraction<>(STAR, X -> new Abstraction<>(X, x -> x));
 	
-	Reducible id_I = new Application(id, I);
+	Reducible<String> id_I = new Application<>(id, I);
 	
-	Reducible left = new Abstraction(I, a -> new Abstraction(I, b -> a));
+	Reducible<String> left = new Abstraction<>(I, a -> new Abstraction<>(I, b -> a));
 	
-	IAbstraction ID = new Abstraction(STAR, X -> X);
+	IAbstraction<String> ID = new Abstraction<>(STAR, X -> X);
 	
 	
 	@org.junit.jupiter.api.Test
@@ -71,22 +71,22 @@ class Test {
 		
 		
 		
-		assertTrue(id_I.isBetaEqual(new Abstraction(I, x->x)));
+		assertTrue(id_I.isBetaEqual(new Abstraction<>(I, x->x)));
 		
 		// wrong type: expected ?:STAR
-		assertThrows(AssertionError.class, ()-> new Application(id, STAR) );
-		assertThrows(AssertionError.class, ()-> new Application(id, id) );
-		assertThrows(AssertionError.class, ()-> new Application(id, N0) );
+		assertThrows(AssertionError.class, ()-> new Application<>(id, STAR) );
+		assertThrows(AssertionError.class, ()-> new Application<>(id, id) );
+		assertThrows(AssertionError.class, ()-> new Application<>(id, N0) );
 		
 		// wrong type: expected ?:I
-		assertThrows(AssertionError.class, ()-> new Application(id_I, STAR) );
-		assertThrows(AssertionError.class, ()-> new Application(id_I, id) );
-		assertThrows(AssertionError.class, ()-> new Application(id_I, I) );
+		assertThrows(AssertionError.class, ()-> new Application<>(id_I, STAR) );
+		assertThrows(AssertionError.class, ()-> new Application<>(id_I, id) );
+		assertThrows(AssertionError.class, ()-> new Application<>(id_I, I) );
 		
 		// none-function parameter
-		assertThrows(AssertionError.class, ()-> new Application(STAR, null) );
-		assertThrows(AssertionError.class, ()-> new Application(I, null) );
-		assertThrows(AssertionError.class, ()-> new Application(N0, null) );
+		assertThrows(AssertionError.class, ()-> new Application<>(STAR, null) );
+		assertThrows(AssertionError.class, ()-> new Application<>(I, null) );
+		assertThrows(AssertionError.class, ()-> new Application<>(N0, null) );
 		
 		//System.out.println(id_I);
 		
@@ -94,24 +94,24 @@ class Test {
 		//assertTrue(p.matcher(id_I.toString()).matches());
 		
 		
-		assertFalse(new Abstraction(I, x -> new Abstraction(I, y -> y)).isStructureEqual(new Abstraction(I, x -> new Abstraction(I, y -> x))));
+		assertFalse(new Abstraction<>(I, x -> new Abstraction<>(I, y -> y)).isStructureEqual(new Abstraction<>(I, x -> new Abstraction<>(I, y -> x))));
 		
-		assertFalse(new Application(id_I, N0).isStructureEqual(new Application(id_I, new Variable(I))));
+		assertFalse(new Application<>(id_I, N0).isStructureEqual(new Application<>(id_I, new Variable<>(I))));
 		
 		assertTrue(
-				new Abstraction(id.type(), f -> new Abstraction(STAR, X -> new Application(f, X))).apply(id).isBetaEqual(id)
+				new Abstraction<>(id.type(), f -> new Abstraction<>(STAR, X -> new Application<>(f, X))).apply(id).isBetaEqual(id)
 		);
 		
-		Variable a = new Variable(I);
+		Variable<String> a = new Variable<>(I);
 		
 		assertFalse(
-				new Application(new Application(left, new Variable(I)), new Variable(I))
-				.isStructureEqual(new Application(new Application(left, a), a))
+				new Application<>(new Application<>(left, new Variable<>(I)), new Variable<>(I))
+				.isStructureEqual(new Application<>(new Application<>(left, a), a))
 		);
 		
 		assertTrue(
-				new Application(new Variable(left.type()), new Variable(I))
-				.isBetaEqual(new Application(new Variable(left.type()), new Variable(I)))
+				new Application<>(new Variable<>(left.type()), new Variable<>(I))
+				.isBetaEqual(new Application<>(new Variable<>(left.type()), new Variable<>(I)))
 		);
 		
 		assertTrue(ID.andThen(ID).isBetaEqual(ID));
@@ -126,11 +126,11 @@ class Test {
 		System.out.println(ID+" : "+ID.type()+" : "+ID.type().type());
 				
 		// Types depending on Terms
-		Reducible T_i = new Abstraction(I, i->i.type());
+		Reducible<String> T_i = new Abstraction<>(I, i->i.type());
 		System.out.println(T_i+" : "+T_i.type());
 		
 		// Types depending on Terms
-		Reducible i_T = new Abstraction(STAR, T->N0);
+		Reducible<String> i_T = new Abstraction<>(STAR, T->N0);
 		System.out.println(i_T+" : "+i_T.type());
 				
 		

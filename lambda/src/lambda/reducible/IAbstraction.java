@@ -2,16 +2,29 @@ package lambda.reducible;
 
 import lambda.Reducible;
 
-public interface IAbstraction extends Reducible {
+public interface IAbstraction<T> extends Reducible<T> {
 
-	Reducible apply(Reducible parameter);
+	/**
+	 * @param parameter
+	 * @return
+	 * @throws AssertionError
+	 */
+	Reducible<T> apply(final Reducible<T> parameter) throws AssertionError;
 
-	Reducible domain();
+	/**
+	 * @return type that can be passed to {@link #apply(Reducible)}
+	 */
+	Reducible<T> domain();
 	
-	IAbstraction type();
+	@Override
+	IAbstraction<T> type();
 	
-	default IAbstraction andThen(IAbstraction that) {
-		return new Abstraction(domain(), x -> that.apply(this.apply(x)));
+	/**
+	 * @param that
+	 * @return composed function of {@code this} and {@code that}
+	 */
+	default IAbstraction<T> andThen(final IAbstraction<T> that) {
+		return new Abstraction<>(domain(), x -> that.apply(this.apply(x)));
 	}
 	
 }

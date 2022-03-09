@@ -5,22 +5,22 @@ import java.util.Map;
 
 import lambda.Reducible;
 
-public class Variable implements Reducible {
+public class Variable<T> implements Reducible<T> {
 
-	private static int ID = 0;
+	//private static int ID = 0;
 	
-	private final int id = ID++;
-	private final Reducible type;
+	//private final int id = ID++;
+	private final Reducible<T> type;
 	
 	private static String[] typenames = {"α","β","γ","δ","κ","μ","ν","π","σ","τ","φ","ψ","ω"};
 	private static String[] valuenames = {"a","b","c","d","e","f","g","h","i","j"};
 	
-	public Variable(Reducible type) {
+	public Variable(Reducible<T> type) {
 		this.type = type;
 	}
 	
 	@Override
-	public Reducible type() {
+	public Reducible<T> type() {
 		return type;
 	}
 	
@@ -28,7 +28,7 @@ public class Variable implements Reducible {
 		return toString(new HashMap<>());
 	}
 	
-	public String toString(Map<Variable, String> names) {
+	public String toString(Map<Variable<T>, String> names) {
 		if (!names.containsKey(this)) {
 			names.put(this, Integer.toString(names.size()));
 		}
@@ -37,45 +37,35 @@ public class Variable implements Reducible {
 	
 
 	@Override
-	public Reducible replace(Variable variable, Reducible term) {
-		// TODO check if var.type contains term
-		return equals(variable) ? (Reducible)term : this;
+	public Reducible<T> replace(Variable<T> variable, Reducible<T> term) {
+		assert variable.type().containsAll(term.type());
+		return equals(variable) ? term : this;
 	}
 
 	@Override
-	public Reducible reduce() {
+	public Reducible<T> reduce() {
 		return this;
 	}
 
 	@Override
-	public boolean isMapping(Reducible term, Map<Variable, Reducible> map) {
+	public boolean isMapping(Reducible<T> term, Map<Variable<T>, Reducible<T>> map) {
 		try {
 			if (map.containsKey(this)) {
 				return map.get(this).equals(term);
 			} else if (this.type().isMapping(term.type(), map)) {
 				map.put(this, term);
 				return true;
+			} else {
+				return false;
 			}
-		} catch (AssertionError e) {}
-		return false;
-		
-		/*
-		if (term instanceof Variable) {
-			Variable<?> that = (Variable<?>) term;
-			if (map.containsKey(this)) {
-				return map.get(this).equals(term);
-			} else if (this.type().isMapping(term.type(), map)) {
-				map.put(this, that);
-				return true;
-			}
+		} catch (AssertionError e) {
+			return false;
 		}
-		return false;
-		*/
 	}
 
 	@Override
-	public boolean contains(Variable variable) {
-		return equals(variable) || type.contains(variable);
+	public boolean isDepending(Variable<T> variable) {
+		return equals(variable) || type.isDepending(variable);
 	}
 	
 

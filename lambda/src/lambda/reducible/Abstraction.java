@@ -7,52 +7,51 @@ import java.util.function.Function;
 import lambda.Reducible;
 
  
-public class Abstraction implements IAbstraction {
+public class Abstraction<T> implements IAbstraction<T> {
 
-	private final Variable variable;
-	private final Reducible term;
+	private final Variable<T> variable;
+	private final Reducible<T> term;
 
-	public Abstraction(Reducible type, Function<Variable, Reducible> lambda) {
-		this.variable = new Variable(type);
+	public Abstraction(Reducible<T> type, Function<Variable<T>, Reducible<T>> lambda) {
+		this.variable = new Variable<>(type);
 		this.term = lambda.apply(variable);
 	}
 
 	@Override
-	public Reducible replace(Variable variable, Reducible term) {
-		return new Abstraction(this.variable.type().replace(variable, term), x -> apply(x).replace(variable, term));
+	public Reducible<T> replace(Variable<T> variable, Reducible<T> term) {
+		return new Abstraction<>(this.variable.type().replace(variable, term), x -> apply(x).replace(variable, term));
 	}
 
-	public Reducible apply(Reducible parameter) {
-		assert domain().containsAll(parameter.type());
-		// TODO check if Var type conatains parameter
+	@Override
+	public Reducible<T> apply(Reducible<T> parameter) {
 		return term.replace(variable, parameter);
 	}
 
 	@Override
-	public Reducible reduce() {
-		return new Abstraction(variable.type().reduce(), x -> apply(x).reduce());
+	public Reducible<T> reduce() {
+		return new Abstraction<>(variable.type().reduce(), x -> apply(x).reduce());
 	}
 
 	@Override
-	public boolean isMapping(Reducible term, Map<Variable, Reducible> map) {
+	public boolean isMapping(Reducible<T> term, Map<Variable<T>, Reducible<T>> map) {
 		if (term instanceof Abstraction) {
-			Abstraction that = (Abstraction) term;
+			Abstraction<T> that = (Abstraction<T>) term;
 			return this.variable.isMapping(that.variable, map) && this.term.isMapping(that.term, map);
 		}
 		return false;
 	}
 
 	@Override
-	public IAbstraction type() {
-		return new Abstraction(domain(), x -> apply(x).type());
+	public IAbstraction<T> type() {
+		return new Abstraction<>(domain(), x -> apply(x).type());
 	}
 
-	public Reducible domain() {
+	public Reducible<T> domain() {
 		return variable.type();
 	}
 	
 	public boolean isConstant() {
-		return !term.contains(variable);
+		return !term.isDepending(variable);
 	}
 	
 	public String toString() {
@@ -60,7 +59,7 @@ public class Abstraction implements IAbstraction {
 	}
 	
 	@Override
-	public String toString(Map<Variable, String> names) {
+	public String toString(Map<Variable<T>, String> names) {
 		if (!isConstant())
 			return "λ"+variable.toString(names)+":"+variable.type().toString(names)+"."+term.toString(names);
 		else if (variable.type() instanceof Abstraction)
@@ -70,8 +69,8 @@ public class Abstraction implements IAbstraction {
 	}
 
 	@Override
-	public boolean contains(Variable variable) {
-		return isConstant() && this.variable.contains(variable) || term.contains(variable);
+	public boolean isDepending(Variable<T> variable) {
+		return isConstant() && this.variable.isDepending(variable) || term.isDepending(variable);
 	}
 
 }

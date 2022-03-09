@@ -2,15 +2,15 @@ package lambda;
 
 import lambda.reducible.Variable;
 
-public interface Irreducible extends Reducible {
+public interface Irreducible<T> extends Reducible<T> {
 
 	
-	default Reducible replace(final Variable variable, final Reducible term) {
+	default Reducible<T> replace(final Variable<T> variable, final Reducible<T> term) {
 		return this;
 	}
 
 
-	default Reducible reduce() {
+	default Reducible<T> reduce() {
 		return this;
 	}
 	
