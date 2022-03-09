@@ -14,6 +14,9 @@ public class Element<T> extends Expression<T> {
 		this.element = that;
 	}
 	
+	public T get() {
+		return this.element;
+	}
 	
 	public static <T> Expression<T> of(T element) {
 		return new Element<T>(element);

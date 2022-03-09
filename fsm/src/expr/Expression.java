@@ -118,7 +118,7 @@ public abstract class Expression<T> implements Language<Expression<T>, T> {
 	}
 
 	
-	interface Visitor<T, R> {
+	public interface Visitor<T, R> {
 
 		R handle(Complement<T> that);
 		R handle(Element<T> that);
