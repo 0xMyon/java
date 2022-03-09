@@ -2,6 +2,7 @@ package expr;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import fsm.Machine;
 import lang.Language;
@@ -10,6 +11,11 @@ import set.FiniteSet;
 
 public abstract class Expression<T> implements Language<Expression<T>, T> {
 
+	public <R> Expression<R> map(Function<T, R> function) {
+		return convertLanguage(new Factory<>(), function);
+	}
+	
+	
 	@Override
 	public Expression<T> concat(Expression<T> that) {
 		return Sequence.of(this, that);
