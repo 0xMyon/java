@@ -3,3 +3,5 @@ lambda/lambda/bin/
 .project
 .settings/
 *.class
+/.metadata/
+*/.gitignore
