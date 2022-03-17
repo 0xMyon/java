@@ -54,6 +54,23 @@ public interface Language<THIS extends Language<THIS, T>, T> extends Type<THIS, 
 		return contains(s.collect(Collectors.toList()));
 	}
 
+
+	@Override
+	default boolean startsWith(final THIS that) {
+		return that.concat(factory().universe()).containsAll(THIS());
+	}
+
+	@Override
+	default boolean endsWith(final THIS that) {
+		return factory().universe().concat(that).containsAll(THIS());
+	}
+
+	@Override
+	default boolean isEnclosed(final THIS that) {
+		return factory().universe().concat(that).concat(factory().universe()).containsAll(THIS());
+	}
+
+
 	interface Factory<THIS extends Language<THIS, T>, T> extends Type.Factory<THIS, List<T>>, Sequence.Factory<THIS, T> {
 
 		@Override

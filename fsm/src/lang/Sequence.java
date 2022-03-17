@@ -67,6 +67,30 @@ public interface Sequence<THIS extends Sequence<THIS, T>, T> {
 	 */
 	Factory<THIS, T> factory();
 
+
+	/**
+	 * @param that sub-sequence
+	 * @return true, if all elements of {@code that} are matching at the beginning of {@code this}
+	 */
+	boolean startsWith(final THIS that);
+
+	/**
+	 * @param that sub-sequence
+	 * @return true, if all elements of {@code that} are matching at the end of {@code this}
+	 */
+	boolean endsWith(final THIS that);
+
+	/**
+	 * @param that sub-sequence
+	 * @return true, if all elements of {@code that} are matching anywhere in {@code this}
+	 */
+	boolean isEnclosed(final THIS that);
+
+	//T head();
+
+	//THIS tail();
+
+
 	interface Factory<THIS extends Sequence<THIS, T>, T> {
 
 		/**
