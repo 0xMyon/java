@@ -114,7 +114,7 @@ public class ComplementSet<SET extends Set<SET,T>, T> implements Type<Complement
 	}
 
 	@Override
-	public boolean isEqual(ComplementSet<SET, T> that) {
+	public boolean isEqual(final ComplementSet<SET, T> that) {
 		return this.complement == that.complement && this.set.isEqual(that.set);
 	}
 

@@ -40,8 +40,8 @@ public interface Language<THIS extends Language<THIS, T>, T> extends Type<THIS, 
 	default THIS star() {
 		return iterate().optional();
 	}
-	
-	
+
+
 	/**
 	 * @return true, if {@link Factory#epsilon()} is contained
 	 * @see Type#contains(Object)
@@ -49,48 +49,54 @@ public interface Language<THIS extends Language<THIS, T>, T> extends Type<THIS, 
 	default boolean hasEpsilon() {
 		return contains(List.of());
 	}
-	
-	default boolean contains(Stream<T> s) {
+
+	default boolean contains(final Stream<T> s) {
 		return contains(s.collect(Collectors.toList()));
 	}
-	
+
 	interface Factory<THIS extends Language<THIS, T>, T> extends Type.Factory<THIS, List<T>>, Sequence.Factory<THIS, T> {
-				
+
 		@Override
-		public default THIS summand(List<T> that) {
+		public default THIS summand(final List<T> that) {
 			return sequence(that.stream().map(this::factor));
 		}
-		
+
 		@SuppressWarnings("unchecked")
-		default THIS parallel(THIS... that) {
+		default THIS parallel(final THIS... that) {
 			return parallel(Stream.of(that));
 		}
-		
-		default THIS parallel(Stream<THIS> stream) {
+
+		default THIS parallel(final Stream<THIS> stream) {
 			return stream.reduce(epsilon(), Language::parallel);
 		}
-		
+
 	}
-	
+
 	/**
-	 * convert between two {@link Language}s
+	 * @param <THAT> target implementation of {@link Language}
+	 * @param <U> underlying type of {@link Target} {@link Language}
+	 * @param factory of target {@link Language}
+	 * @return converted object in target {@link Language}
+	 */
+	<THAT extends Language<THAT, U>, U> THAT convertLanguage(final Language.Factory<THAT, U> factory, final Function<T,U> function);
+
+	/**
+	 * convert to target {@link Language} with identical
 	 * @param <THAT>
 	 * @param factory
 	 * @return
 	 */
-	<THAT extends Language<THAT, U>, U> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T,U> function);
-		
-	default <THAT extends Language<THAT, T>> THAT convertLanguage(Language.Factory<THAT, T> factory) {
+	default <THAT extends Language<THAT, T>> THAT convertLanguage(final Language.Factory<THAT, T> factory) {
 		return convertLanguage(factory, Function.identity());
 	}
-	
-	
-	
+
+
+
 	@Override
-	default <THAT extends Type<THAT, U>,U> THAT convertType(Type.Factory<THAT, U> factory, Function<List<T>, U> function) {
+	default <THAT extends Type<THAT, U>,U> THAT convertType(final Type.Factory<THAT, U> factory, final Function<List<T>, U> function) {
 		throw new UnsupportedOperationException();
 	}
-	
-	
-	
+
+
+
 }

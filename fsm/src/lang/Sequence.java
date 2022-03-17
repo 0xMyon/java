@@ -5,11 +5,11 @@ import java.util.stream.Stream;
 
 /**
  * Representation of a List
- * 
+ *
  * @author 0xMyon
  *
  * @param <THIS> underlying implementation type
- * @param <T> 
+ * @param <T>
  */
 public interface Sequence<THIS extends Sequence<THIS, T>, T> {
 
@@ -17,21 +17,21 @@ public interface Sequence<THIS extends Sequence<THIS, T>, T> {
 	 * @return this
 	 */
 	THIS THIS();
-	
+
 	/**
 	 * @param that
 	 * @return the concatenated {@link Sequence} this.that
 	 */
 	THIS concat(final THIS that);
-	
-	
+
+
 	/**
-	 * {@code this.reverse().reverse() == this} 
+	 * {@code this.reverse().reverse() == this}
 	 * @return the reverse {@link Sequence} this^R
 	 */
 	THIS reverse();
-	
-	
+
+
 	default THIS power(final int exponent) {
 		if (exponent == 0) {
 			return factory().epsilon();
@@ -45,7 +45,7 @@ public interface Sequence<THIS extends Sequence<THIS, T>, T> {
 			return power(exponent-1).concat(THIS());
 		}
 	}
-	
+
 	/**
 	 * Self concatenation {@code this.concat(this)}
 	 * @return the squared {@link Sequence}
@@ -54,27 +54,27 @@ public interface Sequence<THIS extends Sequence<THIS, T>, T> {
 	default THIS square() {
 		return concat(THIS());
 	}
-	
+
 	/**
 	 * Check for empty sequence
 	 * @return true, if sequence is empty
 	 * @see Factory#epsilon()
 	 */
 	boolean isEpsilon();
-	
+
 	/**
 	 * @return {@link Factory} associated with this {@link Sequence}
 	 */
 	Factory<THIS, T> factory();
-	
+
 	interface Factory<THIS extends Sequence<THIS, T>, T> {
-		
+
 		/**
 		 * @return the empty {@link Sequence}
 		 * @see Sequence#isEpsilon()
 		 */
 		THIS epsilon();
-				
+
 		/**
 		 * @param stream of elements
 		 * @return {@link Sequence#concat(Sequence)} of stream with {@link #epsilon()} as neutral element
@@ -82,20 +82,20 @@ public interface Sequence<THIS extends Sequence<THIS, T>, T> {
 		default THIS sequence(final Stream<THIS> stream) {
 			return stream.reduce(epsilon(), Sequence::concat);
 		}
-		
+
 		/**
-		 * @param that 
+		 * @param that
 		 * @return
 		 */
 		@SuppressWarnings("unchecked")
 		default THIS sequence(final THIS... that) {
 			return sequence(Stream.of(that));
 		}
-		
-		
+
+
 		THIS factor(final T that);
-		
+
 	}
-	
-	
+
+
 }
