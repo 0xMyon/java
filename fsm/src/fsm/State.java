@@ -8,23 +8,23 @@ import lang.Type;
 import util.Tuple;
 
 
-class State<T,TYPE extends Type<TYPE,T>,R> {
+class State<T,R> {
 
-	private final Machine<T,TYPE,R> machine;
-	
+	private final Machine<T,R> machine;
+
 	private final int id;
-	
-	
-	State(Machine<T,TYPE,R> machine) {
+
+
+	State(final Machine<T,R> machine) {
 		this.machine = machine;
 		this.id = machine.ID();
 	}
-	
-	
+
+
 	boolean isFinal() {
 		return machine.finals().contains(this) || (isInitial() && machine.hasEpsilon());
 	}
-	
+
 	boolean nonFinal() {
 		return !isFinal();
 	}
@@ -32,91 +32,92 @@ class State<T,TYPE extends Type<TYPE,T>,R> {
 	boolean isInitial() {
 		return this == machine.initial();
 	}
-	
-	
+
+
+	@Override
 	public String toString() {
 		return "<"+(isInitial()?"I":"")+id+(isFinal()?"F":"")+(isUnreachable()?"U":"")+">";
 	}
-	
-	
-	boolean isSource(Transition<T,TYPE,R> t) {
+
+
+	boolean isSource(final Transition<T,R> t) {
 		return equals(t.source());
 	}
-	
-	boolean isSourceNoLoop(Transition<T,TYPE,R> t) {
+
+	boolean isSourceNoLoop(final Transition<T,R> t) {
 		return isSource(t) && !isTarget(t);
 	}
-	
-	boolean isLoop(Transition<T,TYPE,R> t) {
+
+	boolean isLoop(final Transition<T,R> t) {
 		return isSource(t) && isTarget(t);
 	}
-	
-	
-	boolean isTarget(Transition<T,TYPE,R> t) {
+
+
+	boolean isTarget(final Transition<T,R> t) {
 		return equals(t.target());
 	}
-	
-	boolean isTargetNoLoop(Transition<T,TYPE,R> t) {
+
+	boolean isTargetNoLoop(final Transition<T,R> t) {
 		return isTarget(t) && !isSource(t);
 	}
-	
-	
-	public Stream<Transition<T,TYPE,R>> loop() {
+
+
+	public Stream<Transition<T,R>> loop() {
 		return machine.transitions().stream().filter(this::isLoop).collect(Collectors.toSet()).stream();
 	}
-	
-	Stream<Transition<T,TYPE,R>> next() {
+
+	Stream<Transition<T,R>> next() {
 		return next(true);
 	}
-	
-	Stream<Transition<T,TYPE,R>> next(boolean withLoop) {
+
+	Stream<Transition<T,R>> next(final boolean withLoop) {
 		return machine.transitions().stream().filter(withLoop ? this::isSource : this::isSourceNoLoop).collect(Collectors.toSet()).stream();
 	}
-	
-	Stream<TYPE> nextSymbols() {
-		return next().map(Transition::value).distinct();
+
+	Stream<Type<?, T>> nextSymbols() {
+		return next().map(Transition::value).distinct().map(x->x);
 	}
-	
-	Stream<State<T,TYPE,R>> next(T value) {
+
+	Stream<State<T,R>> next(final T value) {
 		return next().filter(t -> t.value().contains(value)).map(Transition::target);
 	}
-	
-	Stream<State<T,TYPE,R>> next(TYPE value) {
-		return next().filter(t -> t.value().containsAll(value)).map(Transition::target);
+
+	Stream<State<T,R>> next(final Type<?, T> value) {
+		return next().filter(t -> t.value().containsAll_Type(value)).map(Transition::target);
 	}
-	
-	public Stream<Tuple<State<T,TYPE,R>,List<R>>> next(T value, List<R> output) {
-		return next().filter(t -> t.value().contains(value)).map(t -> 
-			Tuple.of(t.target(), Stream.concat(output.stream(), t.result().stream()).collect(Collectors.toList()))
-		);
-	}	
-	
-	Stream<Transition<T,TYPE,R>> prev() {
+
+	public Stream<Tuple<State<T,R>,List<R>>> next(final T value, final List<R> output) {
+		return next().filter(t -> t.value().contains(value)).map(t ->
+		Tuple.of(t.target(), Stream.concat(output.stream(), t.result().stream()).collect(Collectors.toList()))
+				);
+	}
+
+	Stream<Transition<T,R>> prev() {
 		return prev(true);
 	}
-	
-	Stream<Transition<T,TYPE,R>> prev(boolean withLoop) {
+
+	Stream<Transition<T,R>> prev(final boolean withLoop) {
 		return machine.transitions().stream().filter(withLoop ? this::isTarget : this::isTargetNoLoop).collect(Collectors.toSet()).stream();
 	}
-	
-	
+
+
 	boolean remove() {
-		if (isInitial()) 
+		if (isInitial())
 			throw new NullPointerException();
-		machine.transitions().removeIf( 
-			t -> {
-				try {
-					return t.source().equals(this) || t.target().equals(this);
-				} catch (Exception e) {
-					return false;
+		machine.transitions().removeIf(
+				t -> {
+					try {
+						return t.source().equals(this) || t.target().equals(this);
+					} catch (final Exception e) {
+						return false;
+					}
 				}
-			}
-		);
+				);
 		machine.finals().remove(this);
 		return machine.states().remove(this);
 	}
-		
-	void combine(State<T,TYPE,R> that) {
+
+	void combine(final State<T,R> that) {
 		if (that.isInitial()) {
 			that.combine(this);
 			return;
@@ -131,7 +132,7 @@ class State<T,TYPE extends Type<TYPE,T>,R> {
 	boolean isUnreachable() {
 		return !isInitial() && (isLastButNotFinal() || isFirst());
 	}
-	
+
 	private boolean isLastButNotFinal() {
 		return !isFinal() && next().allMatch(t -> t.target() == this);
 	}
@@ -140,7 +141,7 @@ class State<T,TYPE extends Type<TYPE,T>,R> {
 	}
 
 
-	
-	
-	
+
+
+
 }
