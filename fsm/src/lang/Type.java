@@ -19,6 +19,7 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 
 
 
+
 	/**
 	 * @return the complement {@link Type} {@code ~this}
 	 */
@@ -51,10 +52,6 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 	 */
 	boolean isFinite();
 
-	/**
-	 * @return {@link Factory} associated with this {@link Type}
-	 */
-	Factory<THIS, T> factory();
 
 
 
@@ -69,10 +66,9 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 
 	}
 
-
 	<THAT extends Type<THAT, U>, U> THAT convertType(Type.Factory<THAT, U> factory, Function<T,U> function);
 
-	default <THAT extends Type<THAT, T>> THAT convertType(final Type.Factory<THAT, T> factory) {
+	default <THAT extends Type<THAT, T>> THAT convertType(final Type.Factory<THAT,T> factory) {
 		return convertType(factory, Function.identity());
 	}
 
@@ -88,18 +84,53 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 	 * 		the union over all types equals the union over the result
 	 * @see {@link Type#unite(Type)}
 	 */
-	public static <T,TYPE extends Type<TYPE,T>> Set<TYPE> partition(final Set<TYPE> types) {
-		Set<TYPE> result = new HashSet<>();
-		for(final TYPE A : types) {
-			result = result.stream().map(B -> Stream.of(B.minus(A), B.intersect(A)))
-					.reduce(Stream.of(result.stream().reduce(A, (x,y)->x.minus(y))), Stream::concat)
+	public static <T,TYPE extends Type<TYPE,T>> Set<Type<?, T>> partition(final Set<Type<?, T>> types) {
+		Set<Type<?, T>> result = new HashSet<>();
+		for(final Type<?, T> A : types) {
+			result = result.stream().map(B -> Stream.of(B.minus_Type(A), B.intersect_Type(A)))
+					.reduce(Stream.of(result.stream().reduce(A, Type::minus_Type)), Stream::concat)
 					.filter(X -> !X.isEmpty()).collect(Collectors.toSet());
 		}
 		return result;
 	}
 
-	public static <T,TYPE extends Type<TYPE,T>> Set<TYPE> partition(final Stream<TYPE> types) {
+	public static <T,TYPE extends Type<TYPE,T>> Set<Type<?, T>> partition(final Stream<Type<?, T>> types) {
 		return partition(types.collect(Collectors.toSet()));
 	}
+
+
+	@SuppressWarnings("unchecked")
+	default THIS toType(final Type<?, ? extends T> that) {
+		return getClass().isInstance(that) ? (THIS)that : that.convertType(factory(), x->x);
+		//return that.convertType(factory(), x->x);
+	}
+
+
+	default THIS unite_Type(final Type<?, ? extends T> that) {
+		return unite(toType(that));
+	}
+
+	default THIS minus_Type(final Type<?, ? extends T> that) {
+		return minus(toType(that));
+	}
+
+	default THIS intersect_Type(final Type<?, ? extends T> that) {
+		return intersect(toType(that));
+	}
+
+	default THIS removed_Type(final Type<?, ? extends T> that) {
+		return removed(toType(that));
+	}
+
+	default boolean isEqual_Type(final Type<?, ? extends T> that) {
+		return isEqual(toType(that));
+	}
+
+	default boolean containsAll_Type(final Type<?, ? extends T> that) {
+		return containsAll(toType(that));
+	}
+
+	@Override
+	Factory<THIS, T> factory();
 
 }
