@@ -7,72 +7,86 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import lang.Set;
+import util.Tuple;
 
 public class FiniteSet<T> implements Set<FiniteSet<T>, T> {
 
 	private final HashSet<T> elements = new HashSet<>();
-	
+
+	public <U> FiniteSet<Tuple<T,U>> concat(final FiniteSet<U> that) {
+		return new FiniteSet<Tuple<T,U>>(elements.stream()
+				.map(left -> that.elements.stream().map(right -> Tuple.of(left, right)))
+				.reduce(Stream.of(), Stream::concat)
+				);
+	}
+
 	@SafeVarargs
-	public FiniteSet(T...ts) {
+	public FiniteSet(final T...ts) {
 		this(Stream.of(ts));
 	}
-	public FiniteSet(Stream<T> stream) {
+	public FiniteSet(final Stream<T> stream) {
 		elements.addAll(stream.collect(Collectors.toSet()));
 	}
-	
-	public FiniteSet<T> unite(FiniteSet<T> that) {
+
+	@Override
+	public FiniteSet<T> unite(final FiniteSet<T> that) {
 		return new FiniteSet<>(Stream.concat(elements.stream(), that.elements.stream()));
 	}
-	
-	public FiniteSet<T> intersect(FiniteSet<T> that) {
+
+	@Override
+	public FiniteSet<T> intersect(final FiniteSet<T> that) {
 		return new FiniteSet<>(elements.stream().filter(that::contains));
 	}
-	
-	public FiniteSet<T> minus(FiniteSet<T> that) {
+
+	@Override
+	public FiniteSet<T> minus(final FiniteSet<T> that) {
 		return new FiniteSet<>(elements.stream().filter(e -> !that.contains(e)));
 	}
 
 	@Override
-	public boolean contains(T that) {
+	public boolean contains(final T that) {
 		return elements.contains(that);
 	}
-	
+
+	@Override
 	public String toString() {
 		return elements.toString();
 	}
-	
+
+	@Override
 	public int hashCode() {
 		return elements.hashCode();
 	}
-	
-	public boolean equals(Object object) {
+
+	@Override
+	public boolean equals(final Object object) {
 		if (object instanceof FiniteSet) {
 			return Objects.equals(elements, ((FiniteSet<?>)object).elements);
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean isEmpty() {
 		return elements.isEmpty();
 	}
-	
+
 	@Override
 	public FiniteSet<T> THIS() {
 		return this;
 	}
-	
+
 	@Override
-	public boolean containsAll(FiniteSet<T> that) {
+	public boolean containsAll(final FiniteSet<T> that) {
 		return elements.containsAll(that.elements);
 	}
-	
+
 	@Override
-	public <THAT extends Set<THAT, U>, U> THAT convertSet(Set.Factory<THAT, U> factory, Function<T, U> function) {
+	public <THAT extends Set<THAT, U>, U> THAT convertSet(final Set.Factory<THAT, U> factory, final Function<T, U> function) {
 		return factory.union(elements.stream().map(x -> factory.summand(function.apply(x))));
 	}
-	
-	
+
+
 	public static class Factory<T> implements Set.Factory<FiniteSet<T>, T> {
 
 		@Override
@@ -81,10 +95,21 @@ public class FiniteSet<T> implements Set<FiniteSet<T>, T> {
 		}
 
 		@Override
-		public FiniteSet<T> summand(T that) {
+		public FiniteSet<T> summand(final T that) {
 			return new FiniteSet<>(that);
 		}
-		
+
+	}
+
+
+	@Override
+	public boolean isEqual(final FiniteSet<T> that) {
+		return this.elements.equals(that.elements);
+	}
+
+	@Override
+	public lang.Set.Factory<FiniteSet<T>, T> factory() {
+		return new Factory<>();
 	}
 
 }
