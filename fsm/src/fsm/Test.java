@@ -108,7 +108,7 @@ class Test {
 
 		final var ab = a.concat(b);
 		final var ba = b.concat(a);
-		final var bab = ba.concat(a);
+		final var bab = ba.concat(b);
 
 		final var abR = ab.reverse();
 
