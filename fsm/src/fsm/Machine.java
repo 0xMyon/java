@@ -74,16 +74,19 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 		return result;
 	}
 
-	void transition(final State<T,R> source, final Type<?, T> value, final State<T,R> target) {
-		if (value.isEmpty())
-			return;
+	/**
+	 * Add a {@link Transition} between two states
+	 * @param source {@link State} of the {@link Transition}
+	 * @param type that matches an input-element <T>
+	 * @param target {@link State} of the {@link Transition}
+	 */
+	void transition(final State<T,R> source, final Type<?, T> type, final State<T,R> target) {
+		if (type.isEmpty())	return; // TODO this check should not be done
 		final Optional<Transition<T,R>> tx = transitions.stream().filter(t->t.source()==source && t.target()==target).findFirst();
-		if (tx.isPresent()) {
-			final Transition<T,R> t = tx.get();
+		tx.ifPresentOrElse(t -> {
 			transitions.remove(t);
-			transitions.add(new Transition<T,R>(source, value.unite_Type(t.value()), target, t.result()));
-		} else
-			transitions.add(new Transition<T,R>(source, value, target));
+			transitions.add(new Transition<T,R>(source, type.unite_Type(t.type()), target, t.result())); // TODO alter the type?
+		}, ()-> transitions.add(new Transition<T,R>(source, type, target)));
 	}
 
 	/**
@@ -100,10 +103,10 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	 * @param target
 	 */
 	private void transition(final State<T,R> source, final State<T,R> target) {
-		transitions(target::isLoop).forEach(t->transition(source, t.value(), source));
-		transitions(source::isLoop).forEach(t->transition(target, t.value(), target));
-		transitions(target::isSourceNoLoop).forEach(t->transition(source, t.value(), t.target()));
-		transitions(source::isTargetNoLoop).forEach(t->transition(t.source(), t.value(), target));
+		transitions(target::isLoop).forEach(t->transition(source, t.type(), source));
+		transitions(source::isLoop).forEach(t->transition(target, t.type(), target));
+		transitions(target::isSourceNoLoop).forEach(t->transition(source, t.type(), t.target()));
+		transitions(source::isTargetNoLoop).forEach(t->transition(t.source(), t.type(), target));
 	}
 
 	/**
@@ -143,7 +146,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 		final Map<State<X,R>, State<T,R>> map = new HashMap<>();
 		that.states.stream().forEach(s->map.put(s,state()));
 		that.transitions.stream().forEach(t->transition(
-				map.get(t.source()), f.apply(t.value()), map.get(t.target()))
+				map.get(t.source()), f.apply(t.type()), map.get(t.target()))
 				);
 		return map;
 	}
@@ -160,7 +163,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	private
 	Map<State<T,R>, State<T,R>> clone(final Stream<State<T,R>> stream, final State<T,R> initial, final Predicate<State<T,R>> isFinal) {
 		final Map<State<T,R>, State<T,R>> map = this.include(stream, initial, isFinal);
-		map.forEach((a,b) -> a.next().forEach(t -> transition(b, t.value(), map.get(t.target()))));
+		map.forEach((a,b) -> a.next().forEach(t -> transition(b, t.type(), map.get(t.target()))));
 		return map;
 	}
 
@@ -178,9 +181,9 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 		map.forEach((k,v) -> {
 			if (k.left != null)
-				k.left.next().forEach(t -> result.transition(v, t.value(), map.get(Tuple.left(t.target()))));
+				k.left.next().forEach(t -> result.transition(v, t.type(), map.get(Tuple.left(t.target()))));
 			else
-				k.right.next().forEach(t -> result.transition(v, t.value(), map.get(Tuple.right(t.target()))));
+				k.right.next().forEach(t -> result.transition(v, t.type(), map.get(Tuple.right(t.target()))));
 		});
 		//Map<State<T,TYPE,R>,State<T,TYPE,R>> s1 = result.include(that);
 
@@ -292,10 +295,10 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 		map.entrySet().forEach(e -> {
 			final Tuple<State<T,R>,State<T,R>> source = e.getKey();
 			source.left.next().forEach(t ->
-			result.transition(map.get(source), t.value(), map.get(Tuple.of(t.target(), source.right)))
+			result.transition(map.get(source), t.type(), map.get(Tuple.of(t.target(), source.right)))
 					);
 			source.right.next().forEach(t ->
-			result.transition(map.get(source), t.value(), map.get(Tuple.of(source.left, t.target())))
+			result.transition(map.get(source), t.type(), map.get(Tuple.of(source.left, t.target())))
 					);
 		});
 
@@ -509,11 +512,11 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 				//Type.partition(Stream.concat(pair.getKey().nextSymbols(), pair.getValue().nextSymbols()))
 
 				if (!pair.getKey().next().allMatch(t1 -> {
-					if (pair.getValue().next(t1.value()).count() == 0) {
+					if (pair.getValue().next(t1.type()).count() == 0) {
 						//System.out.println("not found "+t1);
 						return false;
 					}
-					return pair.getValue().next(t1.value()).anyMatch(t2 -> {
+					return pair.getValue().next(t1.type()).anyMatch(t2 -> {
 
 						if (map.containsKey(t1.target()) && !map.get(t1.target()).equals(t2)) {
 							//System.out.println(t1.target()+"!="+t2);
@@ -607,13 +610,13 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 		result.removeUnreachable();
 
 		result.states.stream().filter(s->!s.isInitial()&&!s.isFinal()).forEach(s -> {
-			final var opt = s.loop().map(Transition::value).findFirst();
+			final var opt = s.loop();
 			s.prev(false).forEach(left -> {
 				s.next(false).forEach(right -> {
 					if (opt.isPresent()) {
-						result.transition(left.source(), ((THAT)left.value()).concat(((THAT)opt.get()).star()).concat((THAT)right.value()), right.target());
+						result.transition(left.source(), ((THAT)left.type()).concat(((THAT)opt.get()).star()).concat((THAT)right.type()), right.target());
 					} else {
-						result.transition(left.source(), ((THAT)left.value()).concat((THAT)right.value()), right.target());
+						result.transition(left.source(), ((THAT)left.type()).concat((THAT)right.type()), right.target());
 					}
 				});
 			});
@@ -664,7 +667,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 		final Map<State<T,R>, State<T,R>> s0 = result.include(states.stream(), null, State::isInitial);
 
 		s0.forEach((a,b) -> {
-			if (a != null) a.next().forEach(t -> result.transition(s0.get(t.target()), t.value(), b));
+			if (a != null) a.next().forEach(t -> result.transition(s0.get(t.target()), t.type(), b));
 		});
 
 		// null -> F1
@@ -684,7 +687,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 	@Override
 	public boolean isFinite() {
-		return transitions.stream().map(Transition::value).allMatch(Type::isFinite) && !hasLoops();
+		return transitions.stream().map(Transition::type).allMatch(Type::isFinite) && !hasLoops();
 	}
 
 	private boolean hasLoops() {

@@ -61,9 +61,12 @@ class State<T,R> {
 		return isTarget(t) && !isSource(t);
 	}
 
-
-	public Stream<Transition<T,R>> loop() {
-		return machine.transitions().stream().filter(this::isLoop).collect(Collectors.toSet()).stream();
+	/**
+	 * @return the {@link Type} annotated on a loop of this {@link State}
+	 * @see #isLoop(Transition)
+	 */
+	public Optional<Type<?,T>> loop() {
+		return machine.transitions().stream().filter(this::isLoop).findFirst().map(Transition::type);
 	}
 
 	Stream<Transition<T,R>> next() {
@@ -75,19 +78,23 @@ class State<T,R> {
 	}
 
 	Stream<Type<?, T>> nextSymbols() {
-		return next().map(Transition::value).distinct().map(x->x);
+		return next().map(Transition::type).distinct().map(x->x);
 	}
 
 	Stream<State<T,R>> next(final T value) {
-		return next().filter(t -> t.value().contains(value)).map(Transition::target);
+		return next().filter(t -> t.type().contains(value)).map(Transition::target);
 	}
 
-	Stream<State<T,R>> next(final Type<?, T> value) {
-		return next().filter(t -> t.value().containsAll_Type(value)).map(Transition::target);
+	/**
+	 * @param type input {@link Type}
+	 * @return {@link Stream} succeeding {@link State} that are reachable with input type
+	 */
+	Stream<State<T,R>> next(final Type<?, T> type) {
+		return next().filter(t -> t.type().containsAll_Type(type)).map(Transition::target);
 	}
 
 	public Stream<Tuple<State<T,R>,List<R>>> next(final T value, final List<R> output) {
-		return next().filter(t -> t.value().contains(value)).map(t ->
+		return next().filter(t -> t.type().contains(value)).map(t ->
 		Tuple.of(t.target(), Stream.concat(output.stream(), t.result().stream()).collect(Collectors.toList()))
 				);
 	}
@@ -123,8 +130,8 @@ class State<T,R> {
 			return;
 		}
 		//System.out.println(this+"="+that);
-		that.next().forEach(t -> machine.transition(this, t.value(), t.target()));
-		that.prev().forEach(t -> machine.transition(t.source(), t.value(), this));
+		that.next().forEach(t -> machine.transition(this, t.type(), t.target()));
+		that.prev().forEach(t -> machine.transition(t.source(), t.type(), this));
 		that.remove();
 	}
 
