@@ -6,6 +6,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import set.AnyType;
+import util.Choice;
+import util.Tuple;
+
 
 /**
  *
@@ -54,6 +58,13 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 
 
 
+	default <U> Type<?, Tuple<T,U>> concat(final Type<?, U> that) {
+		return new AnyType.Product<>(this, that);
+	}
+
+	default <U> Type<?, Choice<T,U>> plus(final Type<?, U> that) {
+		return new AnyType.Plus<>(this, that);
+	}
 
 	interface Factory<THIS extends Type<THIS, T>, T> extends lang.Set.Factory<THIS, T> {
 
@@ -62,6 +73,14 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 		 */
 		default THIS universe() {
 			return empty().complement();
+		}
+
+		default <U> THIS convert(final Type<?, U> that, final Function<U,T> f) {
+			return that.convertType(this, f);
+		}
+
+		default <U> THIS convert(final Type<?, ? extends T> that) {
+			return convert(that, x->x);
 		}
 
 	}
@@ -101,7 +120,7 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 
 	@SuppressWarnings("unchecked")
 	default THIS toType(final Type<?, ? extends T> that) {
-		return getClass().isInstance(that) ? (THIS)that : that.convertType(factory(), x->x);
+		return getClass().isInstance(that) ? (THIS)that : factory().convert(that);
 		//return that.convertType(factory(), x->x);
 	}
 

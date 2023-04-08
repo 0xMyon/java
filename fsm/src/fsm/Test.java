@@ -122,6 +122,15 @@ class Test {
 
 		final var abR = ab.reverse();
 
+
+		assertTrue(empty.isEmpty());
+		assertFalse(empty.isEpsilon());
+		assertFalse(epsilon.isEmpty());
+		assertTrue(epsilon.isEpsilon());
+		assertFalse(a.isEmpty());
+		assertFalse(a.isEpsilon());
+
+
 		assertTrue(abR.isEqual(ba));
 
 		assertTrue(abR.reverse().isEqual(ab));
