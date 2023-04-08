@@ -22,6 +22,11 @@ public class ComplementSet<T> implements Type<ComplementSet<T>, T> {
 		this(false, set);
 	}
 
+	@SafeVarargs
+	public ComplementSet(final T...ts) {
+		this(false, new FiniteSet<>(ts));
+	}
+
 	// a u b 	= a u b
 	// a u!b 	= !(b - a)
 	// !a u b 	= !(a - b)

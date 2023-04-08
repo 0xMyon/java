@@ -112,4 +112,9 @@ public class FiniteSet<T> implements Set<FiniteSet<T>, T> {
 		return new Factory<>();
 	}
 
+	@SafeVarargs
+	public static <T> FiniteSet<T> of(final T... that) {
+		return new FiniteSet<>(that);
+	}
+
 }

@@ -23,6 +23,11 @@ import util.BooleanOperator;
 import util.Sets;
 import util.Tuple;
 
+/**
+ * Representation of
+ * @param <T>
+ * @param <R>
+ */
 public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>, List<R>> {
 
 	private final boolean epsilon;
@@ -265,21 +270,21 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 	@Override
 	public Machine<T,R> unite(final Machine<T,R> that) {
-		return operation(that, (a,b) -> a || b);
+		return operation(that, BooleanOperator.disjunction);
 	}
 
 	@Override
 	public Machine<T,R> intersect(final Machine<T,R> that) {
-		return operation(that, (a,b) -> a && b);
+		return operation(that, BooleanOperator.conjunction);
 	}
 
 	@Override
 	public Machine<T,R> minus(final Machine<T,R> that) {
-		return operation(that, (a,b) -> a && !b);
+		return operation(that, BooleanOperator.abjunction);
 	}
 
 	public Machine<T,R> xor(final Machine<T,R> that) {
-		return operation(that, (a,b) -> a ^ b);
+		return operation(that, BooleanOperator.antivalence);
 	}
 
 	@Override
@@ -394,29 +399,28 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 			});
 		});
 
-		result.removeUnreachable();
-		result.identify();
-		return result;
+		return result.removeUnreachable().identify();
 	}
 
 
 	/**
 	 * remove unreachable {@link State}
 	 */
-	private void removeUnreachable() {
+	private Machine<T, R> removeUnreachable() {
 		while(states.removeIf(State::isUnreachable)) {
 			finals.removeIf(f -> !states.contains(f));
 			transitions.removeIf(t -> !states.contains(t.source()) || !states.contains(t.target()));
 		}
 		// remove loop on initial when it's not an final (e.a. epsilon is not contained)
 		if (!epsilon && states.size() == 1) transitions.clear();
+		return this;
 	}
 
 	/**
 	 * identify equal {@link State}
 	 * it is required to be deterministic before calling this function
 	 */
-	private void identify() {
+	private Machine<T, R> identify() {
 
 		// combine states
 		final Set<Tuple<State<T,R>, State<T,R>>> equalent = new HashSet<>();
@@ -445,6 +449,8 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 		// combine remaining states
 		equalent.stream().forEach(current -> current.apply(State::combine));
+
+		return this;
 	}
 
 	@Override
@@ -624,6 +630,12 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 		});
 
 		System.out.println("k "+result.transitions);
+
+		result.finals.stream().reduce(factory.empty(), (x,f) -> {
+			final var loop = f.loop();
+
+			return null;
+		}, Language::unite);
 
 		return null;
 	}

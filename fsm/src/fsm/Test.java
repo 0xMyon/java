@@ -7,12 +7,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.stream.Stream;
 
 import lang.Language;
+import lang.Type;
+import set.ComplementSet;
 
 class Test {
 
 
 	@org.junit.jupiter.api.Test
 	void testEqualence() {
+
+		final Type<?, Number> M = new ComplementSet<>();
+		final Type<?, Integer> N = new ComplementSet<>();
+
+		final var O = M.unite_Type(N);
 
 		System.out.println("testEqualence()");
 
@@ -32,6 +39,9 @@ class Test {
 
 		assertTrue(a.iterate().containsAll(a));
 		assertFalse(a.containsAll(a.iterate()));
+
+		//assertTrue(a.iterate().iterate().isEqual(a.iterate()));
+
 
 		assertTrue(a.unite(b).containsAll(a));
 		assertTrue(a.unite(b).containsAll(b));
