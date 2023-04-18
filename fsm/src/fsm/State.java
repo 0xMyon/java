@@ -13,7 +13,7 @@ import util.Tuple;
  * @param <T> input {@link Type}
  * @param <R> output type
  */
-class State<T,R> {
+public class State<T,R> {
 
 	/**
 	 * Owning {@link Machine}

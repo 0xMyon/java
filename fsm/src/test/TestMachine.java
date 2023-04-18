@@ -1,4 +1,4 @@
-package fsm;
+package test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -6,9 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.stream.Stream;
 
+import fsm.CharMachine;
+import fsm.Machine;
 import lang.Language;
 
-class Test {
+class TestMachine {
 
 
 	@org.junit.jupiter.api.Test
@@ -262,8 +264,6 @@ class Test {
 		System.out.println("ab||ab"+ab.parallel(ab));
 		testAll(ab.parallel(ab), Stream.of("abab", "aabb"), true);
 		testAll(ab.parallel(ab), Stream.of("", "a", "b", "aa", "bb"), false);
-
-
 
 		assertTrue(a.initial().toString().startsWith("<I"));
 		a.finals().forEach(s-> assertTrue(s.toString().endsWith("F>")));

@@ -559,14 +559,14 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	/**
 	 * @return the initial {@link State}
 	 */
-	State<T,R> initial() {
+	public State<T,R> initial() {
 		return initial;
 	}
 
 	/**
 	 * @return all final {@link State}s
 	 */
-	Set<State<T,R>> finals() {
+	public Set<State<T,R>> finals() {
 		return finals;
 	}
 

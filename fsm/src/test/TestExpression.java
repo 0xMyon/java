@@ -1,4 +1,4 @@
-package expr;
+package test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -7,11 +7,13 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
+import expr.Expression;
+import expr.Expression.Factory;
 import fsm.CharMachine;
 import fsm.Machine;
 import lang.Language;
 
-class Test2 {
+class TestExpression {
 
 	
 	@Test

@@ -6,7 +6,6 @@ import java.util.function.Function;
 
 import fsm.Machine;
 import lang.Language;
-import set.ComplementSet;
 
 public abstract class Expression<T> implements Language<Expression<T>, T> {
 
@@ -51,7 +50,7 @@ public abstract class Expression<T> implements Language<Expression<T>, T> {
 		return Parallel.of(this, that);
 	}
 
-	private final Machine.Factory<T, Void> MACHINE = new Machine.Factory<>(new ComplementSet.Factory<>());
+	private final Machine.Factory<T, Void> MACHINE = new Machine.Factory<>();
 
 
 	Optional<Machine<T, Void>> machine = Optional.empty();
