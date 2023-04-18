@@ -30,7 +30,14 @@ import util.Tuple;
  */
 public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>, List<R>> {
 
+	/**
+	 * indication if the empty word is contained
+	 */
 	private final boolean epsilon;
+
+	/**
+	 * {@link Factory} of underlying typesystem
+	 */
 	private final Type.Factory<?, T> factory;
 
 	private int id = 0;
@@ -615,7 +622,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 		result.removeUnreachable();
 
-		result.states.stream().filter(s->!s.isInitial()&&!s.isFinal()).forEach(s -> {
+		result.states.stream().filter(State::isNormal).forEach(s -> {
 			final var opt = s.loop();
 			s.prev(false).forEach(left -> {
 				s.next(false).forEach(right -> {

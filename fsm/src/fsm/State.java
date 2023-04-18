@@ -53,6 +53,10 @@ class State<T,R> {
 		return this == machine.initial();
 	}
 
+	boolean isNormal() {
+		return !isInitial() && !isFinal();
+	}
+
 	/**
 	 * @param t {@link Transition}
 	 * @return true, if this is the source {@link State} of t

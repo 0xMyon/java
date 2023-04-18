@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.stream.Stream;
 
 import lang.Language;
-import lang.Type;
-import set.ComplementSet;
 
 class Test {
 
@@ -16,10 +14,10 @@ class Test {
 	@org.junit.jupiter.api.Test
 	void testEqualence() {
 
-		final Type<?, Number> M = new ComplementSet<>();
-		final Type<?, Integer> N = new ComplementSet<>();
+		//final Type<?, Number> M = new ComplementSet<>();
+		//final Type<?, Integer> N = new ComplementSet<>();
 
-		final var O = M.unite_Type(N);
+		//final var O = M.unite_Type(N);
 
 		System.out.println("testEqualence()");
 
@@ -31,6 +29,7 @@ class Test {
 		final var a_b = a.unite(b);
 		final var ab = a.concat(b);
 		final var ba = b.concat(a);
+		final var e = new CharMachine(true);
 
 		//Machine<Character, InfiniteSet<Character>, Void> a_plus = a.iterate();
 		//Machine<Character, InfiniteSet<Character>, Void> a_plus_2 = a.iterate().iterate();
@@ -68,7 +67,7 @@ class Test {
 		assertFalse(a.containsAll(a.optional()));
 
 		System.out.println("!a+b:= "+a.unite(b).complement());
-		//System.out.println("!!a+b:= "+a.unite(b).complement().complement());
+		System.out.println("!!a+b:= "+a.unite(b).complement().complement());
 
 		System.out.println("a+b & a+c := "+a.unite(b).intersect(a.unite(c)));
 
@@ -104,6 +103,11 @@ class Test {
 		assertTrue(a.unite(b).minus(b).isEqual(a));
 		assertTrue(a.unite(b).minus(a).isEqual(b));
 		assertTrue(a.minus(a).isEmpty());
+
+		assertTrue(a.isEqual(a.parallel(e)));
+		assertTrue(a.parallel(e).isEqual(a));
+		assertTrue(e.parallel(e).isEqual(e));
+
 
 	}
 
@@ -229,6 +233,10 @@ class Test {
 
 		testAll(a_b, Stream.of("a", "b"), true);
 		testAll(a_b, Stream.of("", "ab", "ba", "aa", "bb"), false);
+
+		testAll(a_b.xor(a), Stream.of("b"), true);
+		testAll(a_b.xor(a), Stream.of("", "a", "ab", "ba", "aa", "bb"), false);
+
 
 		testAll(a_, Stream.of("", "a"), true);
 		testAll(a_, Stream.of("b", "ab", "ba", "aa", "bb"), false);

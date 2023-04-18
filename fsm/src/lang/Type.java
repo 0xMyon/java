@@ -121,7 +121,6 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 	@SuppressWarnings("unchecked")
 	default THIS toType(final Type<?, ? extends T> that) {
 		return getClass().isInstance(that) ? (THIS)that : factory().convert(that);
-		//return that.convertType(factory(), x->x);
 	}
 
 
