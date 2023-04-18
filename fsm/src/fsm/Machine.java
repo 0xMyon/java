@@ -457,7 +457,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 		// combine remaining states
 		equalent.stream().forEach(current -> current.apply(State::combine));
 
-		return this;
+		return removeUnreachable();
 	}
 
 	@Override
