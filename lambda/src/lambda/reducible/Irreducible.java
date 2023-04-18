@@ -3,23 +3,17 @@ package lambda.reducible;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import lambda.Reducible;
 import lambda.TypeMismatch;
 
-public class Constant implements Reducible {
+public abstract class Irreducible implements Reducible {
 
 	private final String value;
 
-	private final Constant type;
-
-	public Constant(final String value, final Constant type) {
+	public Irreducible(final String value) {
 		this.value = value;
-		this.type = type;
-	}
-
-	public Constant(final String value) {
-		this(value, null);
 	}
 
 	@Override
@@ -27,11 +21,6 @@ public class Constant implements Reducible {
 		return Objects.equals(this, term);
 	}
 
-	@Override
-	public Constant type() {
-		assert Objects.nonNull(type) : "can not get type of '"+value+"'";
-		return type;
-	}
 
 	@Override
 	public String toString() {
@@ -40,7 +29,7 @@ public class Constant implements Reducible {
 
 	@Override
 	public String toString(final Map<Variable, String> names) {
-		return value.toString();
+		return value;
 	}
 
 	@Override
@@ -56,6 +45,11 @@ public class Constant implements Reducible {
 	@Override
 	public Reducible reduce() {
 		return this;
+	}
+
+	@Override
+	public Stream<Variable> freeVars() {
+		return Stream.of();
 	}
 
 }

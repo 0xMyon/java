@@ -2,8 +2,12 @@ package lambda;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
-import lambda.reducible.Constant;
+import lambda.reducible.Abstraction;
+import lambda.reducible.Irreducible;
+import lambda.reducible.Type;
 import lambda.reducible.Variable;
 
 /**
@@ -21,7 +25,7 @@ public interface Reducible {
 	 * @return a new {@link Reducible} with replacement applied
 	 * @throws AssertionError if {@code !variable.type().containsAll(term.type())}
 	 */
-	Reducible replace(final Variable variable, final Reducible term) throws TypeMismatch;
+	Reducible replace(final Variable variable, final Reducible term);
 
 	/**
 	 * perform many step beta-reduction
@@ -51,7 +55,7 @@ public interface Reducible {
 	 * @return true, if {@code this} and {@code that} are structural equal
 	 */
 	default boolean isStructureEqual(final Reducible that) {
-		return isMapping(that) && that.isMapping(this);
+		return this.isMapping(that) && that.isMapping(this);
 	}
 
 	/**
@@ -65,12 +69,12 @@ public interface Reducible {
 	/**
 	 * @return type of term
 	 * @throws AssertionError on none-existing type
-	 * @see Constant#type()
+	 * @see Irreducible#type()
 	 */
-	Reducible type() throws AssertionError;
+	Reducible type();
 
 
-	//boolean isType();
+	int layer();
 
 	/**
 	 * @param variable
@@ -78,19 +82,45 @@ public interface Reducible {
 	 */
 	boolean isDepending(final Variable variable);
 
+	Stream<Variable> freeVars();
+
+
 	/**
-	 * @param type
-	 * @return
-	 * @see #isMapping(Reducible)
+	 * @param that
+	 * @return true, if the value {@code that} is assignable to the type {@code this}
 	 */
-	default boolean containsAll(final Reducible type) {
-		return isMapping(type);
+	default boolean containsType(final Reducible that) {
+		return isMapping(that);
 	}
 
-	default boolean contains(final Reducible that) {
-		return containsAll(that.type());
+	/**
+	 * @param that
+	 * @return true, if the value {@code that} is assignable to the type {@code this}
+	 */
+	default boolean isAssignable(final Reducible that) {
+		return containsType(that.type());
 	}
+
+
+
+	public static final Irreducible TYPE = new Irreducible("Type") {
+		@Override
+		public Reducible type() {
+			return new Type(this);
+		}
+		@Override
+		public int layer() {
+			return 2;
+		}
+	};
+
 
 	public String toString(final Map<Variable, String> names);
+
+
+	public static Abstraction Lambda(final Reducible type, final Function<Variable, Reducible> lambda) {
+		return new Abstraction(type, lambda);
+	}
+
 
 }

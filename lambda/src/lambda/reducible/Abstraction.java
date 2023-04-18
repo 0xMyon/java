@@ -1,10 +1,10 @@
 package lambda.reducible;
 
-import static lambda.ThrowingFunction.unchecked;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import lambda.Reducible;
 import lambda.TypeMismatch;
@@ -20,32 +20,35 @@ public class Abstraction implements IAbstraction {
 	}
 
 	@Override
-	public Reducible replace(final Variable variable, final Reducible term) throws TypeMismatch {
-		return new Abstraction(domain().replace(variable, term), unchecked(x -> apply(x).replace(variable, term)));
+	public Abstraction replace(final Variable variable, final Reducible term) {
+		return new Abstraction(domain().replace(variable, term), x -> apply(x).replace(variable, term));
 	}
 
 	@Override
-	public Reducible apply(final Reducible parameter) throws TypeMismatch {
-		return term.replace(variable, parameter);
+	public Reducible apply(final Reducible parameter) {
+		if (domain().isAssignable(parameter))
+			return term.replace(variable, parameter);
+		else
+			throw new TypeMismatch("'"+parameter.toString()+"' does not match type '"+domain().toString()+"'");
 	}
 
 	@Override
-	public Reducible reduce() {
-		return new Abstraction(domain().reduce(), unchecked(x -> apply(x).reduce()));
+	public Abstraction reduce() {
+		return new Abstraction(domain().reduce(), x -> apply(x).reduce());
 	}
 
 	@Override
-	public boolean isMapping(final Reducible term, final Map<Variable, Reducible> map) {
+	public boolean isMapping(final Reducible term, final Map<Variable, Reducible> context) {
 		if (term instanceof Abstraction) {
 			final Abstraction that = (Abstraction) term;
-			return variable.isMapping(that.variable, map) && this.term.isMapping(that.term, map);
+			return variable.isMapping(that.variable, context) && this.term.isMapping(that.term, context);
 		}
 		return false;
 	}
 
 	@Override
-	public IAbstraction type() {
-		return new Abstraction(domain(), unchecked(x -> apply(x).type()));
+	public Abstraction type() {
+		return new Abstraction(domain(), x -> apply(x).type());
 	}
 
 	@Override
@@ -76,6 +79,33 @@ public class Abstraction implements IAbstraction {
 	@Override
 	public boolean isDepending(final Variable variable) {
 		return isConstant() && this.variable.isDepending(variable) || term.isDepending(variable);
+	}
+
+	@Override
+	public int layer() {
+		return term.layer(); // TODO
+	}
+
+
+	@Override
+	public boolean isAssignable(final Reducible that) {
+		if (!isMapping(that.type())) {
+			final Map<Variable, Reducible> map = new HashMap<>();
+			return term.isMapping(that.type(), map) && map.containsKey(variable);
+		}
+		return false;
+	}
+
+	@Override
+	public Stream<Variable> freeVars() {
+		return Stream.concat(
+				variable.type().freeVars(),
+				term.freeVars()
+				).filter(not(variable::equals));
+	}
+
+	private static <T> Predicate<T> not(final Predicate<T> that) {
+		return that.negate();
 	}
 
 

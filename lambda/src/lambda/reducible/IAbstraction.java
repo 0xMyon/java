@@ -1,7 +1,5 @@
 package lambda.reducible;
 
-import static lambda.ThrowingFunction.unchecked;
-
 import lambda.Reducible;
 import lambda.TypeMismatch;
 
@@ -13,7 +11,7 @@ public interface IAbstraction extends Reducible {
 	 * @throws AssertionError
 	 * @throws TypeMismatch
 	 */
-	Reducible apply(final Reducible parameter) throws TypeMismatch;
+	Reducible apply(final Reducible parameter);
 
 	/**
 	 * @return type that can be passed to {@link #apply(Reducible)}
@@ -34,20 +32,27 @@ public interface IAbstraction extends Reducible {
 	@Override
 	IAbstraction type();
 
+	@Override
+	IAbstraction reduce();
+
+	@Override
+	IAbstraction replace(Variable variable, Reducible term);
+
+
 	/**
 	 * @param that
 	 * @return composed function of {@code this} and {@code that}
 	 * @throws TypeMismatch
 	 */
-	default IAbstraction andThen(final IAbstraction that) throws TypeMismatch {
+	default IAbstraction andThen(final IAbstraction that) {
 		//System.out.println("dom: "+that+"#"+that.domain()+" | cdom: "+this+"#"+this.codomain());
-		if (!that.domain().containsAll(codomain())) throw new TypeMismatch();
-		return new Abstraction(domain(), unchecked(x -> that.apply(apply(x))));
+		if (!that.domain().containsType(codomain())) throw new TypeMismatch();
+		return new Abstraction(domain(), x -> that.apply(apply(x)));
 	}
 
 
 	/**
-	 * @return true, if the functions output depends on the parameter
+	 * @return true, if the functions output does not depends on the parameter
 	 */
 	boolean isConstant();
 

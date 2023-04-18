@@ -2,6 +2,7 @@ package lambda.reducible;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import lambda.Reducible;
 import lambda.TypeMismatch;
@@ -26,7 +27,7 @@ public class Application implements Reducible {
 		this.parameter = parameter;
 		if (!(function.type() instanceof IAbstraction)) throw new TypeMismatch(function+" is not a function");
 		final Reducible domain = ((IAbstraction)function.type()).domain();
-		if (!domain.containsAll(parameter.type())) throw new TypeMismatch("Domain missmatch: "+domain+":"+domain.type()+" -> "+parameter.type()+":"+parameter.type().type());
+		if (!domain.isAssignable(parameter)) throw new TypeMismatch("Domain missmatch: "+domain+":"+domain.type()+" -> "+parameter.type()+":"+parameter.type().type());
 	}
 
 	@Override
@@ -36,13 +37,10 @@ public class Application implements Reducible {
 
 	@Override
 	public Reducible reduce() {
-		try {
-			return (function instanceof IAbstraction)
-					? ((IAbstraction)function).apply(parameter).reduce()
-							: new Application(function.reduce(), parameter.reduce());
-		} catch (final TypeMismatch e) {
-			throw new RuntimeException(e);
-		}
+		return (function instanceof IAbstraction)
+				? ((IAbstraction)function).apply(parameter).reduce()
+						: new Application(function.reduce(), parameter.reduce());
+
 	}
 
 	@Override
@@ -56,16 +54,22 @@ public class Application implements Reducible {
 
 	@Override
 	public Reducible type() {
-		try {
-			return ((IAbstraction)function.type()).apply(parameter);
-		} catch (final TypeMismatch e) {
-			throw new RuntimeException(e);
-		}
+		return ((IAbstraction)function.type()).apply(parameter.type());
 	}
 
 	@Override
 	public boolean isDepending(final Variable variable) {
 		return function.isDepending(variable) || parameter.isDepending(variable);
+	}
+
+	@Override
+	public int layer() {
+		return function.layer();
+	}
+
+	@Override
+	public Stream<Variable> freeVars() {
+		return Stream.concat(function.freeVars(), parameter.freeVars());
 	}
 
 }
