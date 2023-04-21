@@ -3,9 +3,10 @@ package fsm;
 import set.ComplementSet;
 import set.FiniteSet;
 
-public class CharMachine extends Machine<Character, Void> {
+public class CharMachine extends Machine<Character, Void, ComplementSet<Character, FiniteSet<Character>>> {
 
-	public final static ComplementSet.Factory<Character> FACTORY = new ComplementSet.Factory<>();
+	public final static ComplementSet.Factory<Character, FiniteSet<Character>> FACTORY = 
+			new ComplementSet.Factory<>(new FiniteSet.Factory<>());
 
 	public CharMachine() {
 		this(false);

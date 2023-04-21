@@ -8,8 +8,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 import expr.Expression;
-import expr.Expression.Factory;
-import fsm.CharMachine;
 import fsm.Machine;
 import lang.Language;
 
@@ -19,15 +17,15 @@ class TestExpression {
 	@Test
 	void test() {
 		
-		testLang(new Machine.Factory<>(CharMachine.FACTORY));
-		testLang(new Expression.Factory<>());
+		testLang(Machine.FACTORY());
+		testLang(Expression.FACTORY());
 		
 	}
 		
 
 	private static final String[] ALL = {"", "a", "b", "aa", "ab", "ba", "bb"};
 
-	<THIS extends Language<THIS, Character>> void testLang(Language.Factory<THIS, Character> factory) {
+	<THIS extends Language<THIS, Character>, FACTORY extends Language.Factory<THIS, Character>> void testLang(FACTORY factory) {
 		
 		System.out.println("testLang("+factory.getClass().getName()+")");
 
@@ -77,13 +75,12 @@ class TestExpression {
 		
 	}
 	
-	void testContains(Language<?, Character> lang, String...in) {
+	<THIS extends Language<THIS, Character>> void testContains(THIS lang, String...in) {
 		testAll(lang, Stream.of(in), true);
 		testAll(lang, Stream.of(ALL).filter(c -> !Arrays.asList(in).contains(c)), false);
-		
 	}
 	
-	void testAll(Language<?, Character> fsm, Stream<String> s, boolean exp) {
+	<THIS extends Language<THIS, Character>> void testAll(THIS fsm, Stream<String> s, boolean exp) {
 		s.forEach(x -> {
 			assertEquals(exp, fsm.contains(x.chars().<Character>mapToObj(c->(char)c)), fsm+" does "+(exp?"not ":"")+"contain '"+x+"'");
 		});

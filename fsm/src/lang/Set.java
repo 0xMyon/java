@@ -9,7 +9,6 @@ public interface Set<THIS extends Set<THIS, T>, T> extends Container<THIS, T>, H
 	 * @return the union {@code this | that}
 	 */
 	THIS unite(final THIS that);
-
 	/**
 	 * @return the intersection {@code this & that}
 	 */
@@ -44,6 +43,13 @@ public interface Set<THIS extends Set<THIS, T>, T> extends Container<THIS, T>, H
 	boolean isEmpty();
 
 
+	@Override
+	default <THAT extends Container<THAT, U>, U, FACTORY extends Container.Factory<THAT,U>> THAT convert(final FACTORY factory, final Function<T, U> function) throws UnsupportedOperationException {
+		throw new UnsupportedOperationException();
+	}
+
+	
+	
 	/**
 	 * @param <THAT> target type of the {@link Set}
 	 * @param <U> element target type of the {@link Set}
@@ -52,13 +58,13 @@ public interface Set<THIS extends Set<THIS, T>, T> extends Container<THIS, T>, H
 	 * @return an isomorphic {@link Set} of a different type
 	 * @throws UnsupportedOperationException, if the underlying {@link Set} is not convertible
 	 */
-	<THAT extends Set<THAT, U>, U> THAT convertSet(final Factory<THAT, U> factory, final Function<T, U> function) throws UnsupportedOperationException;
+	<THAT extends Set<THAT, U>, U, FACTORY extends Factory<THAT,U>> THAT convert(final FACTORY factory, final Function<T, U> function) throws UnsupportedOperationException;
 
 	/**
 	 * @see #convertSet(Factory, Function)
 	 */
-	default <THAT extends Set<THAT, T>> THAT convertSet(final Factory<THAT, T> factory) {
-		return convertSet(factory, Function.identity());
+	default <THAT extends Set<THAT, T>, FACTORY extends Factory<THAT,T>> THAT convert(final FACTORY factory) {
+		return convert(factory, Function.identity());
 	}
 
 
@@ -67,7 +73,7 @@ public interface Set<THIS extends Set<THIS, T>, T> extends Container<THIS, T>, H
 	 * @param <THIS> type of the {@link Set}
 	 * @param <T> type of the elements of the {@link Set}
 	 */
-	interface Factory<THIS extends Set<THIS, T>, T> {
+	interface Factory<THIS extends Set<THIS, T>, T> extends Container.Factory<THIS, T> {
 
 		/**
 		 * @return the empty {@link Set}
@@ -85,18 +91,13 @@ public interface Set<THIS extends Set<THIS, T>, T> extends Container<THIS, T>, H
 		}
 
 
-		/**
-		 * @param that
-		 * @return a {@link Set} from underlying elements
-		 */
-		THIS summand(T that);
 
 
 	}
 
 
 
-
+	/*
 	default THIS unite_Set(final Set<?, T> that) {
 		return unite(that.convertSet(factory()));
 	}
@@ -124,6 +125,7 @@ public interface Set<THIS extends Set<THIS, T>, T> extends Container<THIS, T>, H
 	default boolean isEqual_Set(final Set<?, T> that) {
 		return isEqual(that.convertSet(factory()));
 	}
+	*/
 
 	/**
 	 * @return {@link Factory} associated with this {@link Type}

@@ -2,13 +2,14 @@ package expr;
 
 import java.util.function.Function;
 
+import lang.Container;
 import lang.Language;
 
-public class Iteration<T> extends Expression<T> {
+public class Iteration<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYPE> {
 
-	private final Expression<T> base;
+	private final Expression<T,TYPE> base;
 	
-	static <T> Expression<T> of(Expression<T> that) {
+	static <T, TYPE extends Container<TYPE,T>> Expression<T,TYPE> of(Expression<T,TYPE> that) {
 		if (that instanceof Iteration) {
 			return that;
 		} else {
@@ -16,22 +17,34 @@ public class Iteration<T> extends Expression<T> {
 		}
 	}
 	
-	private Iteration(Expression<T> base) {
+	private Iteration(Expression<T,TYPE> base) {
 		this.base = base;
 	}
 	
 	@Override
-	public <THAT extends Language<THAT, U>, U> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
-		return base.convertLanguage(factory, function).iterate();
+	public <THAT extends Language<THAT, U>, U, FACTORY extends Language.Factory<THAT,U>> 
+	THAT convert(final FACTORY factory, final Function<T, U> function) {
+		return base.convert(factory, function).iterate();
 	}
+
+	
 	
 	public String toString() {
 		return base.toString()+"+";
 	}
 	
 	@Override
-	public <R> R accept(Visitor<T, R> visitor) {
+	public <R> R accept(Visitor<T,TYPE, R> visitor) {
 		return visitor.handle(this);
+	}
+	
+	@Override
+	public Language.Factory<Expression<T, TYPE>, T> factory() {
+		return base.factory();
+	}
+	
+	Container.Factory<TYPE,T> underlying_factory() {
+		return base.underlying_factory();
 	}
 	
 }

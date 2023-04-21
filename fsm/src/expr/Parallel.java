@@ -5,30 +5,34 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import lang.Container;
 import lang.Language;
 
-public class Parallel<T> extends Composite<T> {
+public class Parallel<T, TYPE extends Container<TYPE,T>> extends Composite<T,TYPE> {
 
-	public static <T> Expression<T> of(Stream<Expression<T>> elements) {
-		return Composite.of(Parallel.class, elements, Parallel::new, Collectors.toList());
+	public static <T, TYPE extends Container<TYPE,T>> 
+	Expression<T,TYPE> of(Container.Factory<TYPE, T> factory, Stream<Expression<T,TYPE>> elements) {
+		return Composite.of(Parallel.class, elements, Parallel::new, Collectors.toList(), factory);
 	}
 	
 	@SafeVarargs
-	public static <T> Expression<T> of(Expression<T>... elements) {
-		return of(Stream.of(elements));
+	public static <T, TYPE extends Container<TYPE,T>> Expression<T,TYPE> of(Container.Factory<TYPE, T> factory, Expression<T,TYPE>... elements) {
+		return of(factory, Stream.of(elements));
 	}
 	
-	private Parallel(Collection<Expression<T>> list) {
-		super(list);
-	}
-	
-	@Override
-	public <THAT extends Language<THAT, U>, U> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
-		return factory.parallel(elements().stream().map(x -> x.convertLanguage(factory, function)));
+	private Parallel(Container.Factory<TYPE, T> factory, Collection<Expression<T,TYPE>> list) {
+		super(factory, list);
 	}
 	
 	@Override
-	public <R> R accept(Visitor<T, R> visitor) {
+	public <THAT extends Language<THAT, U>, U, FACTORY extends Language.Factory<THAT,U>> 
+	THAT convert(final FACTORY factory, final Function<T, U> function) {
+		return factory.parallel(elements().stream().map(x -> x.convert(factory, function)));
+	}
+
+	
+	@Override
+	public <R> R accept(Visitor<T,TYPE, R> visitor) {
 		return visitor.handle(this);
 	}
 	

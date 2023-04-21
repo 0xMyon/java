@@ -13,17 +13,17 @@ import util.Tuple;
  * @param <T> input {@link Type}
  * @param <R> output type
  */
-public class State<T,R> {
+public class State<T,R,TYPE extends Type<TYPE, T>> {
 
 	/**
 	 * Owning {@link Machine}
 	 */
-	private final Machine<T,R> machine;
+	private final Machine<T,R,TYPE> machine;
 
 	private final int id;
 
 
-	State(final Machine<T,R> machine) {
+	State(final Machine<T,R,TYPE> machine) {
 		this.machine = machine;
 		this.id = machine.ID();
 	}
@@ -62,7 +62,7 @@ public class State<T,R> {
 	 * @return true, if this is the source {@link State} of t
 	 * @see Transition#source()
 	 */
-	boolean isSource(final Transition<T,R> t) {
+	boolean isSource(final Transition<T,R,TYPE> t) {
 		return equals(t.source());
 	}
 
@@ -71,7 +71,7 @@ public class State<T,R> {
 	 * @return true, if this is the source {@link State} of t and not a loop on t
 	 * @see Transition#source()
 	 */
-	boolean isSourceNoLoop(final Transition<T,R> t) {
+	boolean isSourceNoLoop(final Transition<T,R,TYPE> t) {
 		return isSource(t) && !isTarget(t);
 	}
 
@@ -80,7 +80,7 @@ public class State<T,R> {
 	 * @return true, this is a loop on t
 	 * @see Transition#source()
 	 */
-	boolean isLoop(final Transition<T,R> t) {
+	boolean isLoop(final Transition<T,R,TYPE> t) {
 		return isSource(t) && isTarget(t);
 	}
 
@@ -89,7 +89,7 @@ public class State<T,R> {
 	 * @return true, if this is the target {@link State} of t
 	 * @see Transition#target()
 	 */
-	boolean isTarget(final Transition<T,R> t) {
+	boolean isTarget(final Transition<T,R,TYPE> t) {
 		return equals(t.target());
 	}
 
@@ -98,7 +98,7 @@ public class State<T,R> {
 	 * @return true, if this is the target {@link State} of t and not a loop on t
 	 * @see Transition#target()
 	 */
-	boolean isTargetNoLoop(final Transition<T,R> t) {
+	boolean isTargetNoLoop(final Transition<T,R,TYPE> t) {
 		return isTarget(t) && !isSource(t);
 	}
 
@@ -113,7 +113,7 @@ public class State<T,R> {
 	/**
 	 * @return {@link Stream} of succeeding {@link Transition} with loop
 	 */
-	Stream<Transition<T,R>> next() {
+	Stream<Transition<T,R,TYPE>> next() {
 		return next(true);
 	}
 
@@ -121,14 +121,14 @@ public class State<T,R> {
 	 * @param withLoop enable loops
 	 * @return {@link Stream} of succeeding {@link Transition}
 	 */
-	Stream<Transition<T,R>> next(final boolean withLoop) {
+	Stream<Transition<T,R,TYPE>> next(final boolean withLoop) {
 		return machine.transitions().stream().filter(withLoop ? this::isSource : this::isSourceNoLoop).collect(Collectors.toSet()).stream();
 	}
 
 	/**
 	 * @return {@link Stream} of {@link Type} annotated in succeeding {@link Transition}
 	 */
-	Stream<Type<?, T>> nextSymbols() {
+	Stream<TYPE> nextSymbols() {
 		return next().map(Transition::type).distinct().map(x->x);
 	}
 
@@ -136,7 +136,7 @@ public class State<T,R> {
 	 * @param value specific input
 	 * @return {@link Stream} succeeding {@link State} that are reachable with input value
 	 */
-	Stream<State<T,R>> next(final T value) {
+	Stream<State<T,R,TYPE>> next(final T value) {
 		return next().filter(t -> t.type().contains(value)).map(Transition::target);
 	}
 
@@ -144,22 +144,22 @@ public class State<T,R> {
 	 * @param type input {@link Type}
 	 * @return {@link Stream} succeeding {@link State} that are reachable with input type
 	 */
-	Stream<State<T,R>> next(final Type<?, T> type) {
-		return next().filter(t -> t.type().containsAll_Type(type)).map(Transition::target);
+	Stream<State<T,R,TYPE>> next(final TYPE type) {
+		return next().filter(t -> t.type().containsAll(type)).map(Transition::target);
 	}
 
 
-	public Stream<Tuple<State<T,R>,List<R>>> next(final T value, final List<R> output) {
+	public Stream<Tuple<State<T,R,TYPE>,List<R>>> next(final T value, final List<R> output) {
 		return next().filter(t -> t.type().contains(value)).map(t ->
 		Tuple.of(t.target(), Stream.concat(output.stream(), t.result().stream()).collect(Collectors.toList()))
 				);
 	}
 
-	Stream<Transition<T,R>> prev() {
+	Stream<Transition<T,R,TYPE>> prev() {
 		return prev(true);
 	}
 
-	Stream<Transition<T,R>> prev(final boolean withLoop) {
+	Stream<Transition<T,R,TYPE>> prev(final boolean withLoop) {
 		return machine.transitions().stream().filter(withLoop ? this::isTarget : this::isTargetNoLoop).collect(Collectors.toSet()).stream();
 	}
 
@@ -185,7 +185,7 @@ public class State<T,R> {
 	}
 
 
-	void combine(final State<T,R> that) {
+	void combine(final State<T,R,TYPE> that) {
 		if (that.isInitial()) {
 			that.combine(this);
 			return;

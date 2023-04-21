@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.stream.Stream;
 
 import fsm.CharMachine;
-import fsm.Machine;
 import lang.Language;
 
 class TestMachine {

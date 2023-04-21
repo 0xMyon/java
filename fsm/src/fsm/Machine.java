@@ -19,6 +19,7 @@ import expr.Expression;
 import lang.Language;
 import lang.Type;
 import set.ComplementSet;
+import set.FiniteSet;
 import util.BooleanOperator;
 import util.Sets;
 import util.Tuple;
@@ -28,7 +29,7 @@ import util.Tuple;
  * @param <T>
  * @param <R>
  */
-public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>, List<R>> {
+public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machine<T,R,TYPE>, T>, Function<List<T>, List<R>> {
 
 	/**
 	 * indication if the empty word is contained
@@ -38,14 +39,14 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	/**
 	 * {@link Factory} of underlying typesystem
 	 */
-	private final Type.Factory<?, T> factory;
+	private final Type.Factory<TYPE, T> factory;
 
 	private int id = 0;
 
-	private final Set<State<T,R>> states = new HashSet<>();
-	private final State<T,R> initial = state();
-	private final Set<State<T,R>> finals = new HashSet<>();
-	private final Set<Transition<T,R>> transitions = new HashSet<>();
+	private final Set<State<T,R,TYPE>> states = new HashSet<>();
+	private final State<T,R,TYPE> initial = state();
+	private final Set<State<T,R,TYPE>> finals = new HashSet<>();
+	private final Set<Transition<T,R,TYPE>> transitions = new HashSet<>();
 
 
 	int ID() {
@@ -57,12 +58,12 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 		return epsilon;
 	}
 
-	protected Machine(final Type.Factory<?, T> factory, final boolean epsilon) {
+	protected Machine(final Type.Factory<TYPE, T> factory, final boolean epsilon) {
 		this.factory = factory;
 		this.epsilon = epsilon;
 	}
 
-	protected Machine(final Type.Factory<?, T> factory, final Type<?,T> value) {
+	protected Machine(final Type.Factory<TYPE, T> factory, final TYPE value) {
 		this(factory, false);
 		transition(initial, value, state(true));
 	}
@@ -70,7 +71,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	/**
 	 * @return new non-final {@link State}
 	 */
-	private State<T,R> state() {
+	private State<T,R,TYPE> state() {
 		return state(false);
 	}
 
@@ -78,8 +79,8 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	 * @param isFinal
 	 * @return new {@link State}
 	 */
-	private State<T,R> state(final boolean isFinal) {
-		final State<T,R> result = new State<T,R>(this);
+	private State<T,R,TYPE> state(final boolean isFinal) {
+		final State<T,R,TYPE> result = new State<T,R,TYPE>(this);
 		states.add(result);
 		if (isFinal)
 			finals.add(result);
@@ -92,20 +93,20 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	 * @param type that matches an input-element <T>
 	 * @param target {@link State} of the {@link Transition}
 	 */
-	void transition(final State<T,R> source, final Type<?, T> type, final State<T,R> target) {
+	void transition(final State<T,R,TYPE> source, final TYPE type, final State<T,R,TYPE> target) {
 		if (type.isEmpty())	return; // TODO this check should not be done
-		final Optional<Transition<T,R>> tx = transitions.stream().filter(t->t.source()==source && t.target()==target).findFirst();
+		final Optional<Transition<T,R,TYPE>> tx = transitions.stream().filter(t->t.source()==source && t.target()==target).findFirst();
 		tx.ifPresentOrElse(t -> {
 			transitions.remove(t);
-			transitions.add(new Transition<T,R>(source, type.unite_Type(t.type()), target, t.result())); // TODO alter the type?
-		}, ()-> transitions.add(new Transition<T,R>(source, type, target)));
+			transitions.add(new Transition<T,R,TYPE>(source, type.unite(t.type()), target, t.result())); // TODO alter the type?
+		}, ()-> transitions.add(new Transition<T,R,TYPE>(source, type, target)));
 	}
 
 	/**
 	 * @param predicate
 	 * @return {@link Stream} of {@link Transition} that match a given predicate
 	 */
-	private Stream<Transition<T,R>> transitions(final Predicate<Transition<T,R>> predicate) {
+	private Stream<Transition<T,R,TYPE>> transitions(final Predicate<Transition<T,R,TYPE>> predicate) {
 		return transitions.stream().filter(predicate).collect(Collectors.toSet()).stream();
 	}
 
@@ -114,7 +115,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	 * @param source
 	 * @param target
 	 */
-	private void transition(final State<T,R> source, final State<T,R> target) {
+	private void transition(final State<T,R,TYPE> source, final State<T,R,TYPE> target) {
 		transitions(target::isLoop).forEach(t->transition(source, t.type(), source));
 		transitions(source::isLoop).forEach(t->transition(target, t.type(), target));
 		transitions(target::isSourceNoLoop).forEach(t->transition(source, t.type(), t.target()));
@@ -128,11 +129,11 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	 */
 
 
-	private void transition(final Set<State<T,R>> sources, final State<T,R> target) {
+	private void transition(final Set<State<T,R,TYPE>> sources, final State<T,R,TYPE> target) {
 		sources.stream().forEach(source->transition(source,target));
 	}
 
-	private void transition(final State<T,R> source, final Set<State<T,R>> targets) {
+	private void transition(final State<T,R,TYPE> source, final Set<State<T,R,TYPE>> targets) {
 		targets.stream().forEach(target->transition(source,target));
 	}
 
@@ -143,7 +144,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	 * @return {@link Map} from {@link State} of that to {@link State} of this
 	 * @see Machine#include(Machine, Function)
 	 */
-	private Map<State<T,R>,State<T,R>> include(final Machine<T,R> that) {
+	private Map<State<T,R,TYPE>,State<T,R,TYPE>> include(final Machine<T,R,TYPE> that) {
 		return clone(that.states.stream(), that.initial, State::isFinal);
 	}
 
@@ -153,9 +154,10 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	 * @param f {@link Type} conversion
 	 * @return {@link Map} from {@link State} of that to {@link State} of this
 	 */
-	private <X>
-	Map<State<X,R>,State<T,R>> include(final Machine<X,R> that, final Function<Type<?,X>, Type<?,T>> f) {
-		final Map<State<X,R>, State<T,R>> map = new HashMap<>();
+	@SuppressWarnings("unused")
+	private <X, XTYPE extends Type<XTYPE,X>>
+	Map<State<X,R,XTYPE>,State<T,R,TYPE>> include(final Machine<X,R,XTYPE> that, final Function<XTYPE, TYPE> f) {
+		final Map<State<X,R,XTYPE>, State<T,R,TYPE>> map = new HashMap<>();
 		that.states.stream().forEach(s->map.put(s,state()));
 		that.transitions.stream().forEach(t->transition(
 				map.get(t.source()), f.apply(t.type()), map.get(t.target()))
@@ -165,26 +167,26 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 
 
-	private <X> Map<X, State<T,R>> include(final Stream<X> stream, final X initial, final Predicate<X> isFinal) {
-		final Map<X, State<T,R>> map = new HashMap<>();
+	private <X> Map<X, State<T,R,TYPE>> include(final Stream<X> stream, final X initial, final Predicate<X> isFinal) {
+		final Map<X, State<T,R,TYPE>> map = new HashMap<>();
 		stream.filter(s -> !Objects.equals(s, initial)).forEach(s -> map.put(s, state(isFinal.test(s))));
 		map.put(initial, this.initial);
 		return map;
 	}
 
 	private
-	Map<State<T,R>, State<T,R>> clone(final Stream<State<T,R>> stream, final State<T,R> initial, final Predicate<State<T,R>> isFinal) {
-		final Map<State<T,R>, State<T,R>> map = this.include(stream, initial, isFinal);
+	Map<State<T,R,TYPE>, State<T,R,TYPE>> clone(final Stream<State<T,R,TYPE>> stream, final State<T,R,TYPE> initial, final Predicate<State<T,R,TYPE>> isFinal) {
+		final Map<State<T,R,TYPE>, State<T,R,TYPE>> map = this.include(stream, initial, isFinal);
 		map.forEach((a,b) -> a.next().forEach(t -> transition(b, t.type(), map.get(t.target()))));
 		return map;
 	}
 
 
 	@Override
-	public Machine<T,R> concat(final Machine<T,R> that) {
-		final Machine<T,R> result = new Machine<>(factory, this.hasEpsilon() && that.hasEpsilon());
+	public Machine<T,R,TYPE> concat(final Machine<T,R,TYPE> that) {
+		final Machine<T,R,TYPE> result = new Machine<>(factory, this.hasEpsilon() && that.hasEpsilon());
 
-		final Map<Tuple<State<T,R>,State<T,R>>,State<T,R>> map = result.include(
+		final Map<Tuple<State<T,R,TYPE>,State<T,R,TYPE>>,State<T,R,TYPE>> map = result.include(
 				Stream.concat(states.stream().map(Tuple::left), that.states.stream().map(Tuple::right)),
 				Tuple.left(initial),
 				t -> Objects.nonNull(t.right) && t.right.isFinal()
@@ -224,12 +226,12 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 		return result.determinize();
 	}
 
-	private Machine<T,R> operation(final Machine<T,R> that, final BooleanOperator op) {
-		final Machine<T,R> result = new Machine<>(factory, op.apply(this.hasEpsilon(), that.hasEpsilon()));
-		final Map<Tuple<State<T,R>,State<T,R>>, State<T,R>> map = result.include(
+	private Machine<T,R,TYPE> operation(final Machine<T,R,TYPE> that, final BooleanOperator op) {
+		final Machine<T,R,TYPE> result = new Machine<>(factory, op.apply(this.hasEpsilon(), that.hasEpsilon()));
+		final Map<Tuple<State<T,R,TYPE>,State<T,R,TYPE>>, State<T,R,TYPE>> map = result.include(
 				Sets.product(
-						Stream.concat(this.states.stream(), Stream.of((State<T,R>)null)),
-						Stream.concat(that.states.stream(), Stream.of((State<T,R>)null))
+						Stream.concat(this.states.stream(), Stream.of((State<T,R,TYPE>)null)),
+						Stream.concat(that.states.stream(), Stream.of((State<T,R,TYPE>)null))
 						),
 				Tuple.of(this.initial(), that.initial()),
 				t -> op.apply(Objects.nonNull(t.left) && t.left.isFinal(), Objects.nonNull(t.right) && t.right.isFinal())
@@ -237,8 +239,8 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 		// for each power-state
 		map.entrySet().forEach(e -> {
-			final Tuple<State<T,R>,State<T,R>> source = e.getKey();
-			final Set<Type<?, T>> inputs = Stream.of(source.left, source.right).filter(Objects::nonNull)
+			final Tuple<State<T,R,TYPE>,State<T,R,TYPE>> source = e.getKey();
+			final Set<TYPE> inputs = Stream.of(source.left, source.right).filter(Objects::nonNull)
 					.map(State::nextSymbols)
 					.reduce(Stream.of(), Stream::concat)
 					.distinct()
@@ -266,7 +268,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 			result.transition(
 					map.get(source),
-					factory.universe().minus_Type(inputs.stream().reduce(factory.empty(), Type::unite_Type)),
+					factory.universe().minus(inputs.stream().reduce(factory.empty(), Type::unite)),
 					map.get(Tuple.of(null, null))
 					);
 		});
@@ -276,28 +278,28 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	}
 
 	@Override
-	public Machine<T,R> unite(final Machine<T,R> that) {
+	public Machine<T,R,TYPE> unite(final Machine<T,R,TYPE> that) {
 		return operation(that, BooleanOperator.disjunction);
 	}
 
 	@Override
-	public Machine<T,R> intersect(final Machine<T,R> that) {
+	public Machine<T,R,TYPE> intersect(final Machine<T,R,TYPE> that) {
 		return operation(that, BooleanOperator.conjunction);
 	}
 
 	@Override
-	public Machine<T,R> minus(final Machine<T,R> that) {
+	public Machine<T,R,TYPE> minus(final Machine<T,R,TYPE> that) {
 		return operation(that, BooleanOperator.abjunction);
 	}
 
-	public Machine<T,R> xor(final Machine<T,R> that) {
+	public Machine<T,R,TYPE> xor(final Machine<T,R,TYPE> that) {
 		return operation(that, BooleanOperator.antivalence);
 	}
 
 	@Override
-	public Machine<T,R> parallel(final Machine<T,R> that) {
-		final Machine<T,R> result = new Machine<>(factory, this.hasEpsilon() && that.hasEpsilon());
-		final Map<Tuple<State<T,R>,State<T,R>>, State<T,R>> map = result.include(
+	public Machine<T,R,TYPE> parallel(final Machine<T,R,TYPE> that) {
+		final Machine<T,R,TYPE> result = new Machine<>(factory, this.hasEpsilon() && that.hasEpsilon());
+		final Map<Tuple<State<T,R,TYPE>,State<T,R,TYPE>>, State<T,R,TYPE>> map = result.include(
 				Sets.product(this.states.stream(), that.states.stream()),
 				Tuple.of(this.initial(), that.initial()),
 				t -> t.left.isFinal() && t.right.isFinal()
@@ -305,7 +307,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 		// for each power-state
 		map.entrySet().forEach(e -> {
-			final Tuple<State<T,R>,State<T,R>> source = e.getKey();
+			final Tuple<State<T,R,TYPE>,State<T,R,TYPE>> source = e.getKey();
 			source.left.next().forEach(t ->
 			result.transition(map.get(source), t.type(), map.get(Tuple.of(t.target(), source.right)))
 					);
@@ -318,9 +320,9 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	}
 
 	@Override
-	public Machine<T,R> iterate() {
-		final Machine<T,R> result = new Machine<>(factory, this.hasEpsilon());
-		final Map<State<T,R>,State<T,R>> s0 = result.include(this);
+	public Machine<T,R,TYPE> iterate() {
+		final Machine<T,R,TYPE> result = new Machine<>(factory, this.hasEpsilon());
+		final Map<State<T,R,TYPE>,State<T,R,TYPE>> s0 = result.include(this);
 
 		// F1 -> I1
 		result.transition(
@@ -333,8 +335,8 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 
 	@Override
-	public Machine<T,R> optional() {
-		final Machine<T,R> result = new Machine<>(factory, true);
+	public Machine<T,R,TYPE> optional() {
+		final Machine<T,R,TYPE> result = new Machine<>(factory, true);
 
 		result.include(this);
 
@@ -344,18 +346,18 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 
 	@Override
-	public Machine<T,R> complement() {
-		final Machine<T,R> result = new Machine<>(factory, !hasEpsilon());
+	public Machine<T,R,TYPE> complement() {
+		final Machine<T,R,TYPE> result = new Machine<>(factory, !hasEpsilon());
 		result.clone(states.stream(), initial, State::nonFinal);
 
 
 		// new F
-		final State<T,R> fin = result.state(true);
+		final State<T,R,TYPE> fin = result.state(true);
 
 		// S -> F with input completion
 		result.states().forEach(s -> result.transition(
 				s,
-				s.nextSymbols().reduce(factory.empty(), Type::unite_Type).complement(),
+				s.nextSymbols().reduce(factory.empty(), Type::unite).complement(),
 				//factory.union(s.nextSymbols()).complement(),
 				fin
 				));
@@ -371,15 +373,15 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	/**
 	 * @return a new deterministic machine that is equivalent to this
 	 */
-	private Machine<T,R> determinize() {
+	private Machine<T,R,TYPE> determinize() {
 
 		// initial cleanup to reduce states
 		removeUnreachable();
 
 		//System.out.println("rem -> "+this);
 
-		final Machine<T,R> result = new Machine<>(factory, epsilon);
-		final Map<Set<State<T,R>>, State<T,R>> map = result.include(
+		final Machine<T,R,TYPE> result = new Machine<>(factory, epsilon);
+		final Map<Set<State<T,R,TYPE>>, State<T,R,TYPE>> map = result.include(
 				Sets.power(this.states()).stream(),
 				Sets.of(this.initial()),
 				x -> x.stream().anyMatch(State::isFinal)
@@ -387,8 +389,8 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 		// for each power-state
 		map.entrySet().forEach(e -> {
-			final Set<State<T,R>> source = e.getKey();
-			final Set<Type<?, T>> inputs = source.stream()
+			final Set<State<T,R,TYPE>> source = e.getKey();
+			final Set<TYPE> inputs = source.stream()
 					.map(State::nextSymbols)
 					.reduce(Stream.of(), Stream::concat)
 					.distinct()
@@ -396,7 +398,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 			// for each partition of the states input
 			Type.partition(inputs).stream().forEach(x -> {
-				final Set<State<T,R>> target = source.stream()
+				final Set<State<T,R,TYPE>> target = source.stream()
 						.map(s -> s.next(x))
 						.reduce(Stream.of(), Stream::concat)
 						.collect(Collectors.toSet());
@@ -413,7 +415,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	/**
 	 * remove unreachable {@link State}
 	 */
-	private Machine<T, R> removeUnreachable() {
+	private Machine<T, R, TYPE> removeUnreachable() {
 		while(states.removeIf(State::isUnreachable)) {
 			finals.removeIf(f -> !states.contains(f));
 			transitions.removeIf(t -> !states.contains(t.source()) || !states.contains(t.target()));
@@ -427,10 +429,10 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	 * identify equal {@link State}
 	 * it is required to be deterministic before calling this function
 	 */
-	private Machine<T, R> identify() {
+	private Machine<T, R, TYPE> identify() {
 
 		// combine states
-		final Set<Tuple<State<T,R>, State<T,R>>> equalent = new HashSet<>();
+		final Set<Tuple<State<T,R,TYPE>, State<T,R,TYPE>>> equalent = new HashSet<>();
 		states.stream().forEach(P -> {
 			states.stream().filter(Q -> Q.hashCode() < P.hashCode() && !Q.equals(P)).forEach(Q -> {
 				if ((P.isFinal() && Q.isFinal()) || (!P.isFinal() && !Q.isFinal())) {
@@ -441,14 +443,14 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 		// remove unequal pairs
 		while(equalent.removeIf(current -> {
-			final State<T,R> P = current.left;
-			final State<T,R> Q = current.right;
+			final State<T,R,TYPE> P = current.left;
+			final State<T,R,TYPE> Q = current.right;
 
 			// for all inputs in sigma: check if transitions end up on the same states
 			return Type.partition(Stream.concat(P.nextSymbols(), Q.nextSymbols()).collect(Collectors.toSet())).stream()
 					.anyMatch(c -> {
-						final State<T,R> PT = P.next(c).findAny().orElse(null);
-						final State<T,R> QT = Q.next(c).findAny().orElse(null);
+						final State<T,R,TYPE> PT = P.next(c).findAny().orElse(null);
+						final State<T,R,TYPE> QT = Q.next(c).findAny().orElse(null);
 						return !Objects.equals(PT, QT) && !equalent.contains(Tuple.of(PT, QT));
 					});
 
@@ -463,7 +465,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	@Override
 	public String toString() {
 		try {
-			return convertLanguage(new Expression.Factory<T>()).toString();
+			return convert(Expression.FACTORY()).toString();
 		} catch (final Exception e) {
 			return transitions.toString()+(hasEpsilon()?"+e":"");
 		}
@@ -478,7 +480,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	public boolean contains(final List<T> word) {
 		if (epsilon && word.isEmpty())
 			return true;
-		Set<State<T,R>> states = new HashSet<>();
+		Set<State<T,R,TYPE>> states = new HashSet<>();
 		states.add(initial);
 		for(final T t : word) {
 			states = states.stream().map(s -> s.next(t)).reduce(Stream.of(), Stream::concat).collect(Collectors.toSet());
@@ -489,7 +491,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	@Override
 	public List<R> apply(final List<T> word) {
 
-		Set<Tuple<State<T,R>,List<R>>> states = new HashSet<>();
+		Set<Tuple<State<T,R,TYPE>,List<R>>> states = new HashSet<>();
 		states.add(Tuple.of(initial, new LinkedList<R>()));
 		for(final T t : word) {
 			states = states.stream().map(s -> s.left.next(t, s.right)).reduce(Stream.of(), Stream::concat).collect(Collectors.toSet());
@@ -500,17 +502,17 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 
 	@Override
-	public boolean containsAll(final Machine<T,R> that) {
+	public boolean containsAll(final Machine<T,R,TYPE> that) {
 
 		if (that.hasEpsilon() && !this.hasEpsilon())
 			return false;
 
-		final Map<State<T,R>, State<T,R>> map = new HashMap<>();
+		final Map<State<T,R,TYPE>, State<T,R,TYPE>> map = new HashMap<>();
 
 		map.put(that.initial(), this.initial());
 
-		final Map<State<T,R>, State<T,R>> current = new HashMap<>();
-		final Map<State<T,R>, State<T,R>> next = new HashMap<>();
+		final Map<State<T,R,TYPE>, State<T,R,TYPE>> current = new HashMap<>();
+		final Map<State<T,R,TYPE>, State<T,R,TYPE>> next = new HashMap<>();
 
 		next.putAll(map);
 
@@ -520,7 +522,7 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 			current.putAll(next);
 			next.clear();
 
-			for(final Entry<State<T,R>, State<T,R>> pair : current.entrySet()) {
+			for(final Entry<State<T,R,TYPE>, State<T,R,TYPE>> pair : current.entrySet()) {
 
 				//Type.partition(Stream.concat(pair.getKey().nextSymbols(), pair.getValue().nextSymbols()))
 
@@ -559,14 +561,14 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	/**
 	 * @return the initial {@link State}
 	 */
-	public State<T,R> initial() {
+	public State<T,R,TYPE> initial() {
 		return initial;
 	}
 
 	/**
 	 * @return all final {@link State}s
 	 */
-	public Set<State<T,R>> finals() {
+	public Set<State<T,R,TYPE>> finals() {
 		return finals;
 	}
 
@@ -574,21 +576,21 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	 *
 	 * @return all {@link Transition}s
 	 */
-	Collection<Transition<T,R>> transitions() {
+	Collection<Transition<T,R,TYPE>> transitions() {
 		return transitions;
 	}
 
 	/**
 	 * @return all {@link State}s
 	 */
-	Set<State<T,R>> states() {
+	Set<State<T,R,TYPE>> states() {
 		return states;
 	}
 
 
 
 	@Override
-	public Machine<T,R> THIS() {
+	public Machine<T,R,TYPE> THIS() {
 		return this;
 	}
 
@@ -604,12 +606,12 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <THAT extends Language<THAT, U>, U> THAT convertLanguage(final Language.Factory<THAT, U> factory, final Function<T,U> function) {
+	public <THAT extends Language<THAT, U>, U, FACTORY extends Language.Factory<THAT, U>> THAT convert(final FACTORY factory, final Function<T,U> function) {
 		// TODO
-		final Machine<List<U>, R> result = new Machine<>(factory, hasEpsilon());
+		final Machine<List<U>, R, THAT> result = new Machine<>(factory, hasEpsilon());
 
 
-		final Map<State<T,R>, State<List<U>,R>> s1 = result.include(this, n -> n.convertType(factory, function.andThen(List::of)));
+		final Map<State<T,R,TYPE>, State<List<U>,R,THAT>> s1 = result.include(this, n -> n.convert(factory, function.andThen(List::of)));
 
 
 		result.transition(result.initial, s1.get(this.initial));
@@ -649,28 +651,24 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 
 
-	public static class Factory<T, R> implements Language.Factory<Machine<T,R>, T> {
+	public static class Factory<T, R, TYPE extends Type<TYPE,T>> implements Language.Factory<Machine<T,R,TYPE>, T> {
 
-		public Factory() {
-			this(new ComplementSet.Factory<>());
-		}
-
-		public Factory(final Type.Factory<?, T> factory) {
+		public Factory(final Type.Factory<TYPE, T> factory) {
 			this.factory = factory;
 		}
 
-		private final Type.Factory<?, T> factory;
+		private final Type.Factory<TYPE, T> factory;
 
 		@Override
-		public Machine<T,R> empty() {
+		public Machine<T,R,TYPE> empty() {
 			return new Machine<>(factory, false);
 		}
 		@Override
-		public Machine<T,R> epsilon() {
+		public Machine<T,R,TYPE> epsilon() {
 			return new Machine<>(factory, true);
 		}
 		@Override
-		public Machine<T, R> factor(final T that) {
+		public Machine<T, R, TYPE> factor(final T that) {
 			return new Machine<>(factory, factory.summand(that));
 		}
 
@@ -679,11 +677,11 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 
 
 	@Override
-	public Machine<T, R> reverse() {
+	public Machine<T,R,TYPE> reverse() {
 
-		final Machine<T,R> result = new Machine<>(factory, hasEpsilon());
+		final Machine<T,R,TYPE> result = new Machine<>(factory, hasEpsilon());
 
-		final Map<State<T,R>, State<T,R>> s0 = result.include(states.stream(), null, State::isInitial);
+		final Map<State<T,R,TYPE>, State<T,R,TYPE>> s0 = result.include(states.stream(), null, State::isInitial);
 
 		s0.forEach((a,b) -> {
 			if (a != null) a.next().forEach(t -> result.transition(s0.get(t.target()), t.type(), b));
@@ -698,9 +696,13 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 		return result.determinize();
 
 	}
+	
+	public static <T> Factory<T, Void, ComplementSet<T, FiniteSet<T>>> FACTORY() {
+		return new Factory<>(new ComplementSet.Factory<>(new FiniteSet.Factory<>()));
+	}
 
 	@Override
-	public Factory<T,R> factory() {
+	public Factory<T,R,TYPE> factory() {
 		return new Factory<>(factory);
 	}
 
@@ -710,8 +712,8 @@ public class Machine<T,R> implements Language<Machine<T,R>, T>, Function<List<T>
 	}
 
 	private boolean hasLoops() {
-		final Set<State<T,R>> visited = new HashSet<>();
-		Set<State<T,R>> current = new HashSet<>();
+		final Set<State<T,R,TYPE>> visited = new HashSet<>();
+		Set<State<T,R,TYPE>> current = new HashSet<>();
 		current.add(initial);
 		visited.add(initial);
 		while(!current.isEmpty()) {

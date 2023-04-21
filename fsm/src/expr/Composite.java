@@ -1,20 +1,29 @@
 package expr;
 
 import java.util.Collection;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class Composite<T> extends Expression<T> {
+import lang.Container;
+import lang.Language;
 
-	private final Collection<Expression<T>> elements;
+public abstract class Composite<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYPE> {
+
+	private final Collection<Expression<T,TYPE>> elements;
 	
-	protected Composite(Collection<Expression<T>> elements) {
-		this.elements = elements;
+	Container.Factory<TYPE,T> underlying_factory() {
+		return factory;
 	}
 	
-	public Collection<Expression<T>> elements() {
+	
+	protected Composite(Container.Factory<TYPE, T> factory, Collection<Expression<T,TYPE>> elements) {
+		this.elements = elements;
+		this.factory = factory;
+	}
+	
+	public Collection<Expression<T,TYPE>> elements() {
 		return elements;
 	}
 	
@@ -41,16 +50,30 @@ public abstract class Composite<T> extends Expression<T> {
 	}
 	*/
 	
-	static <T> Expression<T> of(@SuppressWarnings("rawtypes") Class<? extends Composite> clazz, Stream<Expression<T>> stream, Function<Collection<Expression<T>>, Expression<T>> f, Collector<Expression<T>, ?, ? extends Collection<Expression<T>>> collector) {
+	static <T, TYPE extends Container<TYPE,T>> Expression<T,TYPE> of(@SuppressWarnings("rawtypes") 
+		Class<? extends Composite> clazz, 
+		Stream<Expression<T,TYPE>> stream, 
+		BiFunction<Container.Factory<TYPE, T>, Collection<Expression<T,TYPE>>, Expression<T,TYPE>> f, 
+		Collector<Expression<T,TYPE>, ?, ? extends Collection<Expression<T,TYPE>>> collector,
+		Container.Factory<TYPE, T> factory
+	) {
 		return stream.map(x -> {
 			if (clazz.isInstance(x)) {
-				return ((Composite<T>)x).elements().stream();
+				return ((Composite<T,TYPE>)x).elements().stream();
 			} else {
 				return Stream.of(x);
 			}
 		}).reduce(Stream.of(), Stream::concat).collect(Collectors.collectingAndThen(collector, 
-			list -> list.size() == 1 ? list.iterator().next() : f.apply(list)
+			list -> list.size() == 1 ? list.iterator().next() : f.apply(factory, list)
 		));
 	}
 
+	
+	private final Container.Factory<TYPE, T> factory;
+	
+	@Override
+	public Language.Factory<Expression<T, TYPE>, T> factory() {
+		return new Factory<>(factory);
+	}
+	
 }

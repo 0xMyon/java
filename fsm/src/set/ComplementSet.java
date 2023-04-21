@@ -8,23 +8,23 @@ import lang.Set;
 import lang.Type;
 import util.BooleanOperator;
 
-public class ComplementSet<T> implements Type<ComplementSet<T>, T> {
+public class ComplementSet<T, TYPE extends Set<TYPE,T>> implements Type<ComplementSet<T,TYPE>, T> {
 
-	private final Set<?, T> set;
+	private final TYPE set;
 	private final boolean complement;
 
-	public ComplementSet(final boolean complement, final Set<?, T> set) {
+	public ComplementSet(final boolean complement, final TYPE set) {
 		this.set = set;
 		this.complement = complement;
 	}
 
-	public ComplementSet(final Set<?, T> set) {
+	public ComplementSet(final TYPE set) {
 		this(false, set);
 	}
-
+	
 	@SafeVarargs
-	public ComplementSet(final T...ts) {
-		this(false, new FiniteSet<>(ts));
+	static <T> ComplementSet<T, FiniteSet<T>> of(T... ts) {
+		return new ComplementSet<>(new FiniteSet<>(ts));
 	}
 
 	// a u b 	= a u b
@@ -33,14 +33,14 @@ public class ComplementSet<T> implements Type<ComplementSet<T>, T> {
 	// !a u !b 	= !(a & b)
 
 	@Override
-	public ComplementSet<T> unite(final ComplementSet<T> that) {
-		return op(that, (a,b)->a||b, Set::unite_Set, Set::removed_Set, Set::minus_Set, Set::intersect_Set);
+	public ComplementSet<T,TYPE> unite(final ComplementSet<T,TYPE> that) {
+		return op(that, BooleanOperator.disjunction, Set::unite, Set::removed, Set::minus, Set::intersect);
 	}
 
 
 	@Override
-	public ComplementSet<T> intersect(final ComplementSet<T> that) {
-		return op(that, (a,b)->a&&b, Set::intersect_Set, Set::minus_Set, Set::removed_Set, Set::unite_Set);
+	public ComplementSet<T,TYPE> intersect(final ComplementSet<T,TYPE> that) {
+		return op(that, BooleanOperator.conjunction, Set::intersect, Set::minus, Set::removed, Set::unite);
 	}
 
 	// TODO
@@ -52,7 +52,7 @@ public class ComplementSet<T> implements Type<ComplementSet<T>, T> {
 	 */
 
 
-	private ComplementSet<T> op(final ComplementSet<T> that, final BooleanOperator op, final BinaryOperator<Set<?, T>> a, final BinaryOperator<Set<?, T>> b, final BinaryOperator<Set<?, T>> c, final BinaryOperator<Set<?, T>> d) {
+	private ComplementSet<T,TYPE> op(final ComplementSet<T,TYPE> that, final BooleanOperator op, final BinaryOperator<TYPE> a, final BinaryOperator<TYPE> b, final BinaryOperator<TYPE> c, final BinaryOperator<TYPE> d) {
 		return new ComplementSet<>(
 				op.apply(this.complement, that.complement),
 				(this.complement ? that.complement ? d : c : that.complement ? b : a).apply(this.set, that.set)
@@ -60,7 +60,7 @@ public class ComplementSet<T> implements Type<ComplementSet<T>, T> {
 	}
 
 	@Override
-	public ComplementSet<T> complement() {
+	public ComplementSet<T,TYPE> complement() {
 		return new ComplementSet<>(!complement, set);
 	}
 
@@ -70,18 +70,18 @@ public class ComplementSet<T> implements Type<ComplementSet<T>, T> {
 	}
 
 	@Override
-	public boolean containsAll(final ComplementSet<T> that) {
+	public boolean containsAll(final ComplementSet<T,TYPE> that) {
 		if (complement) {
 			if (that.complement) {
-				return that.set.containsAll_Set(this.set);
+				return that.set.containsAll(this.set);
 			} else {
-				return this.set.isDisjunct_Set(that.set);
+				return this.set.isDisjunct(that.set);
 			}
 		} else {
 			if (that.complement) {
 				return false;
 			} else {
-				return this.set.containsAll_Set(that.set);
+				return this.set.containsAll(that.set);
 			}
 		}
 	}
@@ -100,7 +100,7 @@ public class ComplementSet<T> implements Type<ComplementSet<T>, T> {
 	@Override
 	public boolean equals(final Object object) {
 		if (object instanceof ComplementSet) {
-			final ComplementSet<?> that = (ComplementSet<?>) object;
+			final ComplementSet<?,?> that = (ComplementSet<?,?>) object;
 			return Objects.equals(this.complement, that.complement) && Objects.equals(this.set, that.set);
 		}
 		return false;
@@ -117,47 +117,55 @@ public class ComplementSet<T> implements Type<ComplementSet<T>, T> {
 	}
 
 	@Override
-	public ComplementSet<T> THIS() {
+	public ComplementSet<T,TYPE> THIS() {
 		return this;
 	}
 
 	@Override
-	public boolean isEqual(final ComplementSet<T> that) {
-		return this.complement == that.complement && this.set.isEqual_Set(that.set);
+	public boolean isEqual(final ComplementSet<T,TYPE> that) {
+		return this.complement == that.complement && this.set.isEqual(that.set);
 	}
 
 
-	public static class Factory<T> implements Type.Factory<ComplementSet<T>, T> {
+	public static class Factory<T,TYPE extends Set<TYPE,T>> implements Type.Factory<ComplementSet<T,TYPE>, T> {
 
-		private final FiniteSet.Factory<T> factory = new FiniteSet.Factory<T>();
+		public Factory(Set.Factory<TYPE,T> factory) {
+			this.factory = factory;
+		}
+		
+		private final Set.Factory<TYPE,T> factory;
 
 		@Override
-		public ComplementSet<T> empty() {
+		public ComplementSet<T,TYPE> empty() {
 			return new ComplementSet<>(false, factory.empty());
 		}
 
 		@Override
-		public ComplementSet<T> summand(final T that) {
+		public ComplementSet<T,TYPE> summand(final T that) {
 			return new ComplementSet<>(false, factory.summand(that));
 		}
 
 	}
+	
+	
 
 	@Override
-	public Factory<T> factory() {
-		return new Factory<>();
+	public Factory<T,TYPE> factory() {
+		return new Factory<>(set.factory());
 	}
 
 
 	@Override
-	public <THAT extends Type<THAT, U>, U> THAT convertType(final Type.Factory<THAT, U> factory,	final Function<T, U> function) {
-		return set.convertSet(factory, function).complement(complement);
+	public <THAT extends Type<THAT, U>, U, FACTORY extends Type.Factory<THAT, U>> 
+	THAT convert(final FACTORY factory,	final Function<T, U> function) {
+		return set.convert(factory, function).complement(complement);
 	}
 
 	@Override
-	public <THAT extends Set<THAT, U>, U> THAT convertSet(final Set.Factory<THAT, U> factory,	final Function<T, U> function) {
+	public <THAT extends Set<THAT, U>, U, FACTORY extends Set.Factory<THAT, U>> 
+	THAT convert(final FACTORY factory,	final Function<T, U> function) {
 		if (!complement)
-			return set.convertSet(factory, function);
+			return set.convert(factory, function);
 		else
 			throw new UnsupportedOperationException();
 	}

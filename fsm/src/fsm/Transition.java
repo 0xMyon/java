@@ -11,26 +11,26 @@ import lang.Type;
  * @param <T> type of the input
  * @param <R> type of the output
  */
-class Transition<T,R> {
+class Transition<T,R,TYPE extends Type<TYPE,T>> {
 
-	private final State<T,R> source, target;
+	private final State<T,R,TYPE> source, target;
 
 	/**
 	 * Annotated {@link Type}
 	 */
-	private final Type<?, T> type;
+	private final TYPE type;
 
 	private final List<R> result = new LinkedList<>();
 
 	@SafeVarargs
-	Transition(final State<T,R> source, final Type<?, T> value, final State<T,R> target, final R... rs) {
+	Transition(final State<T,R,TYPE> source, final TYPE value, final State<T,R,TYPE> target, final R... rs) {
 		this.source = source;
 		this.type = value;
 		this.target = target;
 		for (final R r : rs) this.result.add(r);
 	}
 
-	Transition(final State<T,R> source, final Type<?, T> value, final State<T,R> target, final List<R> rs) {
+	Transition(final State<T,R,TYPE> source, final TYPE value, final State<T,R,TYPE> target, final List<R> rs) {
 		this.source = source;
 		this.type = value;
 		this.target = target;
@@ -40,17 +40,17 @@ class Transition<T,R> {
 	/**
 	 * @return source {@link State}
 	 */
-	State<T,R> source() { return source; }
+	State<T,R,TYPE> source() { return source; }
 
 	/**
 	 * @return target {@link State}
 	 */
-	State<T,R> target() { return target; }
+	State<T,R,TYPE> target() { return target; }
 
 	/**
 	 * @return annotated {@link Type}
 	 */
-	Type<?,T> type() { return type; }
+	TYPE type() { return type; }
 
 	/**
 	 * @return annotated result
@@ -62,7 +62,7 @@ class Transition<T,R> {
 	@Override
 	public boolean equals(final Object object) {
 		if (object instanceof Transition) {
-			final Transition<?,?> that = (Transition<?,?>) object;
+			final Transition<?,?,?> that = (Transition<?,?,?>) object;
 			return Objects.equals(source, that.source) &&
 					Objects.equals(target, that.target) &&
 					Objects.equals(type, that.type);

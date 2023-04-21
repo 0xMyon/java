@@ -15,7 +15,7 @@ public class Consequence<T> implements Mu<T> {
 	}
 	
 	@Override
-	public <THAT extends Language<THAT, U>, U> THAT convertLanguage(Language.Factory<THAT, U> factory, Function<T, U> function) {
+	public <THAT extends Language<THAT, U>, U, FACTORY extends Language.Factory<THAT, U>> THAT convert(FACTORY factory, Function<T, U> function) {
 		// TODO Auto-generated method stub
 		return null;
 	}

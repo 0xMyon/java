@@ -82,7 +82,7 @@ public class FiniteSet<T> implements Set<FiniteSet<T>, T> {
 	}
 
 	@Override
-	public <THAT extends Set<THAT, U>, U> THAT convertSet(final Set.Factory<THAT, U> factory, final Function<T, U> function) {
+	public <THAT extends Set<THAT, U>, U, FACTORY extends Set.Factory<THAT,U>> THAT convert(final FACTORY factory, final Function<T, U> function) {
 		return factory.union(elements.stream().map(x -> factory.summand(function.apply(x))));
 	}
 

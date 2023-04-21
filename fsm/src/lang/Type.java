@@ -6,10 +6,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import set.AnyType;
-import util.Choice;
-import util.Tuple;
-
 
 /**
  *
@@ -56,16 +52,7 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 	 */
 	boolean isFinite();
 
-
-
-	default <U> Type<?, Tuple<T,U>> concat(final Type<?, U> that) {
-		return new AnyType.Product<>(this, that);
-	}
-
-	default <U> Type<?, Choice<T,U>> plus(final Type<?, U> that) {
-		return new AnyType.Plus<>(this, that);
-	}
-
+	
 	interface Factory<THIS extends Type<THIS, T>, T> extends lang.Set.Factory<THIS, T> {
 
 		/**
@@ -75,24 +62,29 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 			return empty().complement();
 		}
 
+		/*
 		default <U> THIS convert(final Type<?, U> that, final Function<U,T> f) {
-			return that.convertType(this, f);
+			return that.convert(this, f);
 		}
 
 		default <U> THIS convert(final Type<?, ? extends T> that) {
 			return convert(that, x->x);
 		}
+		*/
 
 	}
 
-	<THAT extends Type<THAT, U>, U> THAT convertType(Type.Factory<THAT, U> factory, Function<T,U> function);
+	<THAT extends Type<THAT, U>, U, FACTORY extends Factory<THAT, U>> 
+	THAT convert(final FACTORY factory, Function<T,U> function);
 
-	default <THAT extends Type<THAT, T>> THAT convertType(final Type.Factory<THAT,T> factory) {
-		return convertType(factory, Function.identity());
+	default <THAT extends Type<THAT, T>, FACTORY extends Factory<THAT,T>> 
+	THAT convert(final FACTORY factory) {
+		return convert(factory, Function.identity());
 	}
 
 	@Override
-	default public <THAT extends lang.Set<THAT, U>, U> THAT convertSet(final lang.Set.Factory<THAT, U> factory, final Function<T, U> function) {
+	default public <THAT extends lang.Set<THAT, U>, U, FACTORY extends lang.Set.Factory<THAT, U>> 
+	THAT convert(final FACTORY factory, final Function<T, U> function) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -103,50 +95,21 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 	 * 		the union over all types equals the union over the result
 	 * @see {@link Type#unite(Type)}
 	 */
-	public static <T,TYPE extends Type<TYPE,T>> Set<Type<?, T>> partition(final Set<Type<?, T>> types) {
-		Set<Type<?, T>> result = new HashSet<>();
-		for(final Type<?, T> A : types) {
-			result = result.stream().map(B -> Stream.of(B.minus_Type(A), B.intersect_Type(A)))
-					.reduce(Stream.of(result.stream().reduce(A, Type::minus_Type)), Stream::concat)
-					.filter(X -> !X.isEmpty()).collect(Collectors.toSet());
+	public static <T,TYPE extends Type<TYPE,T>> Set<TYPE> partition(final Set<TYPE> types) {
+		Set<TYPE> result = new HashSet<>();
+		for(final TYPE A : types) {
+			result = result.stream().map(B -> Stream.of(B.minus(A), B.intersect(A)))
+					.reduce(Stream.of(result.stream().reduce(A, Type::minus)), Stream::concat)
+					.filter(x->!x.isEmpty()).collect(Collectors.toSet());
 		}
 		return result;
 	}
 
-	public static <T,TYPE extends Type<TYPE,T>> Set<Type<?, T>> partition(final Stream<Type<?, T>> types) {
+
+	public static <T,TYPE extends Type<TYPE,T>> Set<TYPE> partition(final Stream<TYPE> types) {
 		return partition(types.collect(Collectors.toSet()));
 	}
 
-
-	@SuppressWarnings("unchecked")
-	default THIS toType(final Type<?, ? extends T> that) {
-		return getClass().isInstance(that) ? (THIS)that : factory().convert(that);
-	}
-
-
-	default THIS unite_Type(final Type<?, ? extends T> that) {
-		return unite(toType(that));
-	}
-
-	default THIS minus_Type(final Type<?, ? extends T> that) {
-		return minus(toType(that));
-	}
-
-	default THIS intersect_Type(final Type<?, ? extends T> that) {
-		return intersect(toType(that));
-	}
-
-	default THIS removed_Type(final Type<?, ? extends T> that) {
-		return removed(toType(that));
-	}
-
-	default boolean isEqual_Type(final Type<?, ? extends T> that) {
-		return isEqual(toType(that));
-	}
-
-	default boolean containsAll_Type(final Type<?, ? extends T> that) {
-		return containsAll(toType(that));
-	}
 
 	@Override
 	Factory<THIS, T> factory();

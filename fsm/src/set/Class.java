@@ -1,6 +1,7 @@
 package set;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 import lang.Container;
 
@@ -44,6 +45,26 @@ public class Class<T> implements Container<Class<T>, T> {
 			return Objects.equals(this.representatnt, that.representatnt);
 		}
 		return false;
+	}
+
+	@Override
+	public <THAT extends Container<THAT, U>, U, FACTORY extends Container.Factory<THAT, U>> 
+	THAT convert(FACTORY factory, Function<T, U> function) throws UnsupportedOperationException {
+		return factory.summand(function.apply(representatnt));
+	}
+	
+	public static class Factory<T> implements Container.Factory<Class<T>, T> {
+
+		@Override
+		public Class<T> summand(T that) {
+			return new Class<>(that);
+		}
+
+	}
+
+	@Override
+	public lang.Container.Factory<Class<T>, T> factory() {
+		return new Factory<>() {};
 	}
 
 }
