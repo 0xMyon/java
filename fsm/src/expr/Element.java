@@ -5,6 +5,7 @@ import java.util.function.Function;
 
 import lang.Container;
 import lang.Language;
+import lang.Type;
 
 public class Element<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYPE> {
 
@@ -23,21 +24,23 @@ public class Element<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYP
 	}
 
 	@Override
-	public <THAT extends Language<THAT, U>, U, FACTORY extends Language.Factory<THAT,U>> THAT convert(final FACTORY factory, final Function<T, U> function) {
+	public <THAT extends Language<THAT, U>, U, FACTORY extends Language.Factory<THAT,U>> 
+	THAT convert(final FACTORY factory, final Function<T, U> function) {
 		return element.convert(factory, function.andThen(List::of));
 	}
-
-	/*
+	
 	@Override
-	public <THAT extends Type<THAT, U>, U> THAT convertType(final Type.Factory<THAT, U> factory, final Function<List<T>, U> function) {
-		return factory.summand(function.apply(List.of(element)));
+	public <THAT extends Type<THAT, U>, U, FACTORY extends Type.Factory<THAT,U>> 
+	THAT convert(final FACTORY factory, final Function<List<T>, U> function) {
+		return element.convert(factory, function.compose(List::of));
 	}
 
 	@Override
-	public <THAT extends lang.Set<THAT, U>, U> THAT convertSet(final lang.Set.Factory<THAT, U> factory, final Function<List<T>, U> function) {
-		return factory.summand(function.apply(List.of(element)));
+	public <THAT extends lang.Set<THAT, U>, U, FACTORY extends lang.Set.Factory<THAT, U>> 
+	THAT convert(FACTORY factory,  Function<List<T>, U> function) throws UnsupportedOperationException {
+		return element.convert(factory, function.compose(List::of));
 	}
-	*/
+	
 
 	@Override
 	public String toString() {
