@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
+import java.util.Vector;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -726,8 +728,18 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machin
 		return false;
 	}
 
-
-
+	public List<T> random(Random random) {
+		if (isEmpty()) throw new RuntimeException("empty");
+		List<T> word = new Vector<>();
+		State<T, R, TYPE> state = initial();
+		while((!state.isFinal() || random.nextBoolean()) && state.next().count() != 0) {
+			var ts = state.next().collect(Collectors.toSet());
+			var t = ts.stream().skip(random.nextInt(ts.size())).findFirst().orElseThrow();
+			word.add(t.type().random(random));
+			state = t.target();
+		}
+		return word;
+	}
 
 
 

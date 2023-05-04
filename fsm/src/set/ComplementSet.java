@@ -1,6 +1,7 @@
 package set;
 
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
@@ -168,6 +169,14 @@ public class ComplementSet<T, TYPE extends Set<TYPE,T>> implements Type<Compleme
 			return set.convert(factory, function);
 		else
 			throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public T random(Random random) {
+		if (complement) 
+			throw new RuntimeException("can not give a complement random");
+		else
+			return set.random(random);
 	}
 
 }

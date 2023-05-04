@@ -1,6 +1,7 @@
 package set;
 
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Function;
 
 import lang.Container;
@@ -65,6 +66,11 @@ public class Class<T> implements Container<Class<T>, T> {
 	@Override
 	public lang.Container.Factory<Class<T>, T> factory() {
 		return new Factory<>() {};
+	}
+
+	@Override
+	public T random(Random random) {
+		return representatnt;
 	}
 
 }

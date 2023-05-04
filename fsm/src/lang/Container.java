@@ -1,11 +1,13 @@
 package lang;
 
+import java.util.Random;
 import java.util.function.Function;
 
 public interface Container<THIS extends Container<THIS, T>, T> extends Identifiable<THIS> {
 
 	boolean contains(T that);
 	
+	T random(Random random);
 	
 	/**
 	 * @param <THAT> target type of the {@link Container}

@@ -2,6 +2,8 @@ package expr;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+
 import fsm.Machine;
 import lang.Container;
 import lang.Language;
@@ -158,6 +160,12 @@ public abstract class Expression<T, TYPE extends Container<TYPE,T>> implements L
 	@Override
 	public boolean startsWith(final Expression<T,TYPE> that) {
 		return convert().startsWith(that.convert());
+	}
+	
+
+	@Override
+	public List<T> random(Random random) {
+		return convert().random(random);
 	}
 
 	public interface Visitor<T, TYPE extends Container<TYPE,T>, R> {

@@ -2,6 +2,7 @@ package set;
 
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -115,6 +116,12 @@ public class FiniteSet<T> implements Set<FiniteSet<T>, T> {
 	@SafeVarargs
 	public static <T> FiniteSet<T> of(final T... that) {
 		return new FiniteSet<>(that);
+	}
+
+	@Override
+	public T random(Random random) {
+		return elements.stream().skip(random.nextInt(elements.size()))
+				.findFirst().orElseThrow(()->new RuntimeException("empty"));
 	}
 
 }
