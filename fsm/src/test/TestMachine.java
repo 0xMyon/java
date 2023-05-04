@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Random;
 import java.util.stream.Stream;
 
 import fsm.CharMachine;
@@ -27,6 +28,9 @@ class TestMachine {
 		final CharMachine b = new CharMachine('b');
 		final CharMachine c = new CharMachine('c');
 
+		final CharMachine abc = new CharMachine("abc");
+		assertTrue(CharMachine.toString(abc.iterate().random(new Random())).matches("(abc)*"));
+		
 		final var a_b = a.unite(b);
 		final var ab = a.concat(b);
 		final var ba = b.concat(a);

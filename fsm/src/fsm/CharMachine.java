@@ -1,6 +1,8 @@
 package fsm;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -41,4 +43,9 @@ public class CharMachine extends Machine<Character, Void, ComplementSet<Characte
 		return IntStream.range(0, str.length()).mapToObj(str::charAt);
 	}
 
+	
+	public static String toString(List<Character> list) {
+		return list.stream().reduce("", (a,b)->a+b, (a,b)->a+b);
+	}
+	
 }
