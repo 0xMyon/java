@@ -2,8 +2,9 @@ package lambda.reducible;
 
 import lambda.Reducible;
 import lambda.TypeMismatch;
+import lang.Container;
 
-public interface IAbstraction extends Reducible {
+public interface IAbstraction<T, TYPE extends Container<TYPE, T>> extends Reducible<T, TYPE> {
 
 	/**
 	 * @param parameter
@@ -11,32 +12,32 @@ public interface IAbstraction extends Reducible {
 	 * @throws AssertionError
 	 * @throws TypeMismatch
 	 */
-	Reducible apply(final Reducible parameter);
+	Reducible<T, TYPE> apply(final Reducible<T, TYPE> parameter);
 
 	/**
 	 * @return type that can be passed to {@link #apply(Reducible)}
 	 */
-	Reducible domain();
+	Reducible<T, TYPE> domain();
 
 	/**
 	 * @return type that matches all objects returned by {@link #apply(Reducible)} such that {@code this.codomain().containsAll(this.apply(x)) == true } for all {@code x}
 	 */
-	default Reducible codomain() {
+	default Reducible<T, TYPE> codomain() {
 		try {
-			return type().apply(new Variable(domain()));
+			return type().apply(new Variable<>(domain()));
 		} catch (final TypeMismatch e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
-	IAbstraction type();
+	IAbstraction<T, TYPE> type();
 
 	@Override
-	IAbstraction reduce();
+	IAbstraction<T, TYPE> doReduction();
 
 	@Override
-	IAbstraction replace(Variable variable, Reducible term);
+	IAbstraction<T, TYPE> replace(Variable<T, TYPE> variable, Reducible<T, TYPE> term);
 
 
 	/**
@@ -44,10 +45,10 @@ public interface IAbstraction extends Reducible {
 	 * @return composed function of {@code this} and {@code that}
 	 * @throws TypeMismatch
 	 */
-	default IAbstraction andThen(final IAbstraction that) {
+	default IAbstraction<T, TYPE> andThen(final IAbstraction<T, TYPE> that) {
 		//System.out.println("dom: "+that+"#"+that.domain()+" | cdom: "+this+"#"+this.codomain());
 		if (!that.domain().containsType(codomain())) throw new TypeMismatch();
-		return new Abstraction(domain(), x -> that.apply(apply(x)));
+		return new Abstraction<>(domain(), x -> that.apply(apply(x)));
 	}
 
 

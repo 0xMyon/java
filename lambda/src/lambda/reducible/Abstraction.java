@@ -8,24 +8,25 @@ import java.util.stream.Stream;
 
 import lambda.Reducible;
 import lambda.TypeMismatch;
+import lang.Container;
 
-public class Abstraction implements IAbstraction {
+public class Abstraction<T, TYPE extends Container<TYPE, T>> implements IAbstraction<T,TYPE> {
 
-	private final Variable variable;
-	private final Reducible term;
+	private final Variable<T,TYPE> variable;
+	private final Reducible<T,TYPE> term;
 
-	public Abstraction(final Reducible type, final Function<Variable, Reducible> lambda) {
-		variable = new Variable(type);
+	public Abstraction(final Reducible<T,TYPE> type, final Function<Variable<T,TYPE>, Reducible<T,TYPE>> lambda) {
+		variable = new Variable<>(type);
 		term = lambda.apply(variable);
 	}
 
 	@Override
-	public Abstraction replace(final Variable variable, final Reducible term) {
-		return new Abstraction(domain().replace(variable, term), x -> apply(x).replace(variable, term));
+	public Abstraction<T,TYPE> replace(final Variable<T,TYPE> variable, final Reducible<T,TYPE> term) {
+		return new Abstraction<>(domain().replace(variable, term), x -> apply(x).replace(variable, term));
 	}
 
 	@Override
-	public Reducible apply(final Reducible parameter) {
+	public Reducible<T,TYPE> apply(final Reducible<T,TYPE> parameter) {
 		if (domain().isAssignable(parameter))
 			return term.replace(variable, parameter);
 		else
@@ -33,26 +34,31 @@ public class Abstraction implements IAbstraction {
 	}
 
 	@Override
-	public Abstraction reduce() {
-		return new Abstraction(domain().reduce(), x -> apply(x).reduce());
+	public Abstraction<T,TYPE> doReduction() {
+		return new Abstraction<>(domain().reduce(), x -> apply(x).reduce());
+	}
+	
+	@Override
+	public boolean isReducible() {
+		return variable.isReducible() || term.isReducible();
 	}
 
 	@Override
-	public boolean isMapping(final Reducible term, final Map<Variable, Reducible> context) {
+	public boolean isMapping(final Reducible<T,TYPE> term, final Map<Variable<T,TYPE>, Reducible<T,TYPE>> context) {
 		if (term instanceof Abstraction) {
-			final Abstraction that = (Abstraction) term;
+			final Abstraction<T,TYPE> that = (Abstraction<T,TYPE>) term;
 			return variable.isMapping(that.variable, context) && this.term.isMapping(that.term, context);
 		}
 		return false;
 	}
 
 	@Override
-	public Abstraction type() {
-		return new Abstraction(domain(), x -> apply(x).type());
+	public Abstraction<T,TYPE> type() {
+		return new Abstraction<>(domain(), x -> apply(x).type());
 	}
 
 	@Override
-	public Reducible domain() {
+	public Reducible<T,TYPE> domain() {
 		return variable.type();
 	}
 
@@ -67,7 +73,7 @@ public class Abstraction implements IAbstraction {
 	}
 
 	@Override
-	public String toString(final Map<Variable, String> names) {
+	public String toString(final Map<Variable<T,TYPE>, String> names) {
 		if (!isConstant())
 			return "λ"+variable.toString(names)+":"+variable.type().toString(names)+"."+term.toString(names);
 		else if (variable.type() instanceof Abstraction)
@@ -77,7 +83,7 @@ public class Abstraction implements IAbstraction {
 	}
 
 	@Override
-	public boolean isDepending(final Variable variable) {
+	public boolean isDepending(final Variable<T,TYPE> variable) {
 		return isConstant() && this.variable.isDepending(variable) || term.isDepending(variable);
 	}
 
@@ -88,16 +94,16 @@ public class Abstraction implements IAbstraction {
 
 
 	@Override
-	public boolean isAssignable(final Reducible that) {
+	public boolean isAssignable(final Reducible<T,TYPE> that) {
 		if (!isMapping(that.type())) {
-			final Map<Variable, Reducible> map = new HashMap<>();
+			final Map<Variable<T,TYPE>, Reducible<T,TYPE>> map = new HashMap<>();
 			return term.isMapping(that.type(), map) && map.containsKey(variable);
 		}
 		return false;
 	}
 
 	@Override
-	public Stream<Variable> freeVars() {
+	public Stream<Variable<T,TYPE>> freeVars() {
 		return Stream.concat(
 				variable.type().freeVars(),
 				term.freeVars()
@@ -107,6 +113,8 @@ public class Abstraction implements IAbstraction {
 	private static <T> Predicate<T> not(final Predicate<T> that) {
 		return that.negate();
 	}
+
+	
 
 
 }

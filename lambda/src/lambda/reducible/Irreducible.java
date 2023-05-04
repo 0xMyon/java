@@ -1,26 +1,13 @@
 package lambda.reducible;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import lambda.Reducible;
 import lambda.TypeMismatch;
+import lang.Container;
 
-public abstract class Irreducible implements Reducible {
-
-	private final String value;
-
-	public Irreducible(final String value) {
-		this.value = value;
-	}
-
-	@Override
-	public boolean isMapping(final Reducible term, final Map<Variable, Reducible> map) {
-		return Objects.equals(this, term);
-	}
-
+public abstract class Irreducible<T,TYPE extends Container<TYPE,T>> implements Reducible<T,TYPE> {
 
 	@Override
 	public String toString() {
@@ -28,28 +15,28 @@ public abstract class Irreducible implements Reducible {
 	}
 
 	@Override
-	public String toString(final Map<Variable, String> names) {
-		return value;
-	}
-
-	@Override
-	public boolean isDepending(final Variable variable) {
+	public boolean isDepending(final Variable<T,TYPE> variable) {
 		return false;
 	}
 
 	@Override
-	public Reducible replace(final Variable variable, final Reducible term) throws TypeMismatch {
+	public Reducible<T,TYPE> replace(final Variable<T,TYPE> variable, final Reducible<T,TYPE> term) throws TypeMismatch {
 		return this;
 	}
 
 	@Override
-	public Reducible reduce() {
+	public Reducible<T,TYPE> doReduction() {
 		return this;
 	}
 
 	@Override
-	public Stream<Variable> freeVars() {
+	public Stream<Variable<T,TYPE>> freeVars() {
 		return Stream.of();
+	}
+	
+	@Override
+	public boolean isReducible() {
+		return false;
 	}
 
 }

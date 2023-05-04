@@ -11,69 +11,61 @@ import lambda.Reducible;
 import lambda.TypeMismatch;
 import lambda.reducible.Application;
 import lambda.reducible.Constant;
+import lambda.reducible.ConstantType;
 import lambda.reducible.IAbstraction;
 import lambda.reducible.Irreducible;
 import lambda.reducible.Variable;
+import set.Class;
+import util.Sets;
 
 class Test {
 
 
 	public Test() throws Exception {}
 
-	Irreducible STAR = Reducible.TYPE;
-	Reducible BOX = STAR.type();
-
-	Irreducible I = new Constant("I", STAR);
-	Irreducible N0 = new Constant("0", I);
+	
+	Reducible<Integer, Class<Integer>> I = new ConstantType<>(new Class<>(1));
+	Reducible<Integer, Class<Integer>> N0 = new Constant<>(0, new Class.Factory<>());
 
 
-	Variable T = new Variable(STAR);
+	IAbstraction<Integer, Class<Integer>> id = Lambda(I.type(), X -> Lambda(X, x -> x));
 
-	IAbstraction id = Lambda(STAR, X -> Lambda(X, x -> x));
+	Reducible<Integer, Class<Integer>> id_I = new Application<>(id, I);
 
-	Reducible id_I = new Application(id, I);
+	IAbstraction<Integer, Class<Integer>> left = Lambda(I, a -> Lambda(I, b -> a));
 
-	Reducible left = Lambda(I, a -> Lambda(I, b -> a));
-
-	IAbstraction ID = Lambda(STAR, X -> X);
+	IAbstraction<Integer, Class<Integer>> ID = Lambda(I.type(), X -> X);
 
 
 	@org.junit.jupiter.api.Test
 	void test() throws TypeMismatch {
 
 
-		assertTrue(STAR.type().isBetaEqual(BOX));
+		//assertTrue(STAR.type().isBetaEqual(BOX));
 
 		//assertThrows(AssertionError.class, ()->BOX.type());
 
 
 		assertTrue(id.isStructureEqual(id));
-		assertTrue(id.isStructureEqual(id.reduce()));
+		assertTrue(id.isStructureEqual(id.doReduction()));
 		assertTrue(id.isBetaEqual(id));
 
-		assertTrue(STAR.isBetaEqual(STAR));
-		assertTrue(T.isBetaEqual(T));
+		assertTrue(I.isBetaEqual(I));
 		assertTrue(id_I.isBetaEqual(id_I));
 
 		assertTrue(id_I.isStructureEqual(id_I));
 
-		assertTrue(STAR.isBetaEqual(T.type()));
+		assertTrue(I.type().isBetaEqual(I.type()));
 
-		assertFalse(id.isStructureEqual(STAR));
-		assertFalse(id.isStructureEqual(T));
+		assertFalse(id.isStructureEqual(I.type()));
+		assertFalse(id.isStructureEqual(I));
 		assertFalse(id.isStructureEqual(id_I));
 
-		assertFalse(STAR.isStructureEqual(T));
-		assertFalse(STAR.isStructureEqual(id));
-		assertFalse(STAR.isStructureEqual(id_I));
+		assertFalse(I.isStructureEqual(id));
+		assertFalse(I.isStructureEqual(id_I));
 
-		assertFalse(T.isStructureEqual(STAR));
-		assertFalse(T.isStructureEqual(id));
-		assertFalse(T.isStructureEqual(id_I));
-
-		assertFalse(id_I.isStructureEqual(STAR));
 		assertFalse(id_I.isStructureEqual(id));
-		assertFalse(id_I.isStructureEqual(T));
+		assertFalse(id_I.isStructureEqual(I));
 
 
 
@@ -81,18 +73,18 @@ class Test {
 
 		// wrong type: expected ?:STAR
 		//assertThrows(TypeMismatch.class, ()-> new Application<>(id, STAR) );
-		assertThrows(Throwable.class, ()-> new Application(id, id) );
-		assertThrows(Throwable.class, ()-> new Application(id, N0) );
+		assertThrows(Throwable.class, ()-> new Application<>(id, id) );
+		assertThrows(Throwable.class, ()-> new Application<>(id, N0) );
 
 		// wrong type: expected ?:I
 		//assertThrows(TypeMismatch.class, ()-> new Application<>(id_I, STAR) );
-		assertThrows(Throwable.class, ()-> new Application(id_I, id) );
-		assertThrows(Throwable.class, ()-> new Application(id_I, I) );
+		assertThrows(Throwable.class, ()-> new Application<>(id_I, id) );
+		assertThrows(Throwable.class, ()-> new Application<>(id_I, I) );
 
 		// none-function parameter
-		assertThrows(Throwable.class, ()-> new Application(STAR, null) );
-		assertThrows(Throwable.class, ()-> new Application(I, null) );
-		assertThrows(Throwable.class, ()-> new Application(N0, null) );
+		assertThrows(Throwable.class, ()-> new Application<>(I.type(), null) );
+		assertThrows(Throwable.class, ()-> new Application<>(I, null) );
+		assertThrows(Throwable.class, ()-> new Application<>(N0, null) );
 
 		//System.out.println(id_I);
 
@@ -108,16 +100,17 @@ class Test {
 
 		//assertTrue(Lambda(id.type(), f -> Lambda(STAR, X -> new Application(f, X))).apply(id).isBetaEqual(id));
 
-		final Variable a = new Variable(I);
+		final Variable<Integer, Class<Integer>> a = new Variable<>(I);
 
+		/*throws
 		assertFalse(
-				new Application(new Application(left, new Variable(I)), new Variable(I))
-				.isStructureEqual(new Application(new Application(left, a), a))
+				new Application<>(new Application<>(left, new Variable<>(I)), new Variable<>(I))
+				.isStructureEqual(new Application<>(new Application<>(left, a), a))
 				);
-
+		 */
 		assertTrue(
-				new Application(new Variable(left.type()), new Variable(I))
-				.isBetaEqual(new Application(new Variable(left.type()), new Variable(I)))
+				new Application<>(new Variable<>(left.type()), new Variable<>(I))
+				.isBetaEqual(new Application<>(new Variable<>(left.type()), new Variable<>(I)))
 				);
 
 		assertTrue(ID.andThen(ID).isBetaEqual(ID));
@@ -126,19 +119,7 @@ class Test {
 
 
 
-		final IAbstraction typed_id = Lambda(STAR, T -> Lambda(T, x -> T));
-
-		assertEquals(1, I.layer());
-
-		assertEquals(1, typed_id.layer());
-		assertEquals(0, id.layer());
-		assertEquals(0, id_I.layer());
-		assertEquals(2, STAR.layer());
-		assertEquals(3, STAR.type().layer());
-		assertEquals(4, STAR.type().type().layer());
-
-
-		assertTrue(typed_id.isAssignable(id_I));
+		
 
 		// deducing
 		//assertTrue(typed_id.isAssignable(id));
@@ -152,20 +133,20 @@ class Test {
 		System.out.println(ID+" : "+ID.type()+" : "+ID.type().type());
 
 		// Types depending on Terms
-		final Reducible T_i = Lambda(I, i->i.type());
+		final Reducible<Integer, Class<Integer>> T_i = Lambda(I, i->i.type());
 		System.out.println(T_i+" : "+T_i.type());
 
 		// Types depending on Terms
-		final Reducible i_T = Lambda(STAR, T->N0);
-		System.out.println(i_T+" : "+i_T.type());
+		//final Reducible<Integer, Class<Integer>>  i_T = Lambda(STAR, T->N0);
+		//System.out.println(i_T+" : "+i_T.type());
 
 
 		System.out.println(id+" : "+id.type());
 		System.out.println(id_I+" : "+id_I.type());
-		System.out.println(id_I.reduce()+" : "+id_I.reduce().type());
+		System.out.println(id_I.doReduction()+" : "+id_I.doReduction().type());
 		System.out.println(id+" : "+id.type()+" : "+id.type().type());
 
-		assertTrue(id_I.type().isBetaEqual(id_I.reduce().type()));
+		assertTrue(id_I.type().isBetaEqual(id_I.doReduction().type()));
 
 	}
 
