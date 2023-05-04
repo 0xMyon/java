@@ -1,5 +1,9 @@
 package fsm;
 
+import java.util.Arrays;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import set.ComplementSet;
 import set.FiniteSet;
 
@@ -16,8 +20,25 @@ public class CharMachine extends Machine<Character, Void, ComplementSet<Characte
 		super(FACTORY, epsilon);
 	}
 
-	public CharMachine(final Character c) {
-		super(FACTORY, new ComplementSet<>(new FiniteSet<>(c)));
+	
+	public CharMachine(final Stream<Character> cs) {
+		super(FACTORY, cs.toArray(Character[]::new));
+	}
+	
+	public CharMachine(final Character... cs) {
+		super(FACTORY, cs);
+	}
+		
+	public CharMachine(String str) {
+		this(toStream(str));
+	}
+	
+	boolean contains(String str) {
+		return contains(Arrays.asList(toStream(str).toArray(Character[]::new)));
+	}
+	
+	private static Stream<Character> toStream(String str) {
+		return IntStream.range(0, str.length()).mapToObj(str::charAt);
 	}
 
 }

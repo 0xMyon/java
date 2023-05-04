@@ -15,6 +15,7 @@ import java.util.Vector;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import expr.Expression;
@@ -65,11 +66,17 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machin
 		this.epsilon = epsilon;
 	}
 
-	protected Machine(final Type.Factory<TYPE, T> factory, final TYPE value) {
+	@SafeVarargs
+	protected Machine(final Type.Factory<TYPE, T> factory, final T... values) {
 		this(factory, false);
-		transition(initial, value, state(true));
+		State<T, R, TYPE> last = initial;
+		for(int i = 0; i < values.length; i++) {
+			State<T,R,TYPE> next = state(i == values.length - 1);
+			transition(last, factory.summand(values[i]), next);
+			last = next;
+		}
 	}
-
+	
 	/**
 	 * @return new non-final {@link State}
 	 */
@@ -671,7 +678,7 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machin
 		}
 		@Override
 		public Machine<T, R, TYPE> factor(final T that) {
-			return new Machine<>(factory, factory.summand(that));
+			return new Machine<>(factory, that);
 		}
 
 	}
