@@ -129,7 +129,7 @@ public class State<T,R,TYPE extends Type<TYPE, T>> {
 	 * @return {@link Stream} of {@link Type} annotated in succeeding {@link Transition}
 	 */
 	Stream<TYPE> nextSymbols() {
-		return next().map(Transition::type).distinct().map(x->x);
+		return next().map(Transition::type).distinct();
 	}
 
 	/**
