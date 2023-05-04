@@ -3,6 +3,7 @@ package test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -78,6 +79,9 @@ class TestExpression {
 	<THIS extends Language<THIS, Character>> void testContains(THIS lang, String...in) {
 		testAll(lang, Stream.of(in), true);
 		testAll(lang, Stream.of(ALL).filter(c -> !Arrays.asList(in).contains(c)), false);
+		
+		for(int i = 0; i < 100; i++)
+		testAll(lang, Stream.of(lang.random(new Random()).stream().reduce("", (s,c)->s+c, (a,b)->a+b)), true);
 	}
 	
 	<THIS extends Language<THIS, Character>> void testAll(THIS fsm, Stream<String> s, boolean exp) {
