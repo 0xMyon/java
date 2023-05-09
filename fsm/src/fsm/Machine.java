@@ -17,7 +17,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import expr.Expression;
 import lang.Language;
 import lang.Type;
 import set.ComplementSet;
@@ -162,7 +161,6 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machin
 	 * @param f {@link Type} conversion
 	 * @return {@link Map} from {@link State} of that to {@link State} of this
 	 */
-	@SuppressWarnings("unused")
 	private <X, XTYPE extends Type<XTYPE,X>>
 	Map<State<X,R,XTYPE>,State<T,R,TYPE>> include(final Machine<X,R,XTYPE> that, final Function<XTYPE, TYPE> f) {
 		final Map<State<X,R,XTYPE>, State<T,R,TYPE>> map = new HashMap<>();
@@ -612,52 +610,44 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machin
 		return transitions.isEmpty() && hasEpsilon();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <THAT extends Language<THAT, U>, U, FACTORY extends Language.Factory<THAT, U>> THAT convert(final FACTORY factory, final Function<T,U> function) {
-		// TODO
-		final Machine<List<U>, R, THAT> result = new Machine<>(factory, hasEpsilon());
+		final Machine<List<U>, R, THAT> result = new Machine<>(factory);
 
 
-		final Map<State<T,R,TYPE>, State<List<U>,R,THAT>> s1 = result.include(this, n -> n.convert(factory, function.andThen(List::of)));
+		final Map<State<T,R,TYPE>, State<List<U>,R,THAT>> s1 = 
+				result.include(this, n -> n.convert(factory, function.andThen(List::of)));
 
 
-		result.transition(result.initial, s1.get(this.initial));
+		result.transition(result.initial, factory.epsilon(), s1.get(this.initial));
 
-		result.transition(
-				this.finals().stream().map(s1::get).collect(Collectors.toSet()),
-				result.state(true)
-				);
-
-
-		result.removeUnreachable();
+		var newFinal = result.state(true);
+		
+		if (hasEpsilon())
+			result.transition(s1.get(initial()), factory.epsilon(), newFinal);
+		
+		this.finals().stream().map(s1::get).forEach(f -> 
+			result.transition(f, factory.epsilon(), newFinal)
+		);
 
 		result.states.stream().filter(State::isNormal).forEach(s -> {
-			final var opt = s.loop();
 			s.prev(false).forEach(left -> {
 				s.next(false).forEach(right -> {
-					if (opt.isPresent()) {
-						result.transition(left.source(), ((THAT)left.type()).concat(((THAT)opt.get()).star()).concat((THAT)right.type()), right.target());
-					} else {
-						result.transition(left.source(), ((THAT)left.type()).concat((THAT)right.type()), right.target());
-					}
+					result.transition(
+						left.source(), 
+						left.type().concat(s.loop().orElse(factory.epsilon()).star()).concat(right.type()), 
+						right.target()
+					);
 				});
 			});
 			result.transitions.removeIf(t -> s.isSource(t) || s.isTarget(t));
 		});
-
-		System.out.println("k "+result.transitions);
-
-		result.finals.stream().reduce(factory.empty(), (x,f) -> {
-			final var loop = f.loop();
-
-			return null;
-		}, Language::unite);
-
-		return null;
+		result.removeUnreachable();
+		
+		//System.out.println("k "+result.transitions);
+		
+		return result.transitions().stream().findFirst().get().type();
 	}
-
-
 
 	public static class Factory<T, R, TYPE extends Type<TYPE,T>> implements Language.Factory<Machine<T,R,TYPE>, T> {
 

@@ -106,7 +106,7 @@ public class State<T,R,TYPE extends Type<TYPE, T>> {
 	 * @return the {@link Type} annotated on a loop of this {@link State}
 	 * @see #isLoop(Transition)
 	 */
-	public Optional<Type<?,T>> loop() {
+	public Optional<TYPE> loop() {
 		return machine.transitions().stream().filter(this::isLoop).findFirst().map(Transition::type);
 	}
 
