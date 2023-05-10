@@ -5,12 +5,12 @@ import java.util.Optional;
 import java.util.Random;
 
 import fsm.Machine;
-import lang.Container;
 import lang.Language;
+import lang.Type;
 import set.ComplementSet;
 import set.FiniteSet;
 
-public abstract class Expression<T, TYPE extends Container<TYPE,T>> implements Language<Expression<T,TYPE>, T> {
+public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Language<Expression<T,TYPE>, T, TYPE> {
 
 	/*
 	public <R,RTYPE extends Type<RTYPE,R>> Expression<R,RTYPE> map(final Function<T, R> function) {
@@ -110,23 +110,19 @@ public abstract class Expression<T, TYPE extends Container<TYPE,T>> implements L
 	 * @param <T>
 	 * @return default {@link Factory}
 	 */
-	public static <T> Factory<T, set.Class<T>> FACTORY() {
-		return new Factory<>(new set.Class.Factory<>());
+	public static <T> Factory<T, ComplementSet<T, FiniteSet<T>>> FACTORY() {
+		return new Factory<>(ComplementSet.FACTORY());
 	}
 
 	abstract Container.Factory<TYPE,T> underlying_factory();
 	
-	public static class Factory<T, TYPE extends Container<TYPE,T>> implements Language.Factory<Expression<T,TYPE>, T> {
+	public static class Factory<T, TYPE extends Type<TYPE,T>> implements Language.Factory<Expression<T,TYPE>, T, TYPE> {
 		
-		public Factory(Container.Factory<TYPE,T> factory) {
+		public Factory(Type.Factory<TYPE,T> factory) {
 			this.factory = factory;
 		}
 		
-		Container.Factory<TYPE,T> factory() {
-			return factory;
-		}
-		
-		private Container.Factory<TYPE,T> factory;
+		private Type.Factory<TYPE,T> factory;
 		
 		@Override
 		public Expression<T,TYPE> empty() {
@@ -139,6 +135,16 @@ public abstract class Expression<T, TYPE extends Container<TYPE,T>> implements L
 		@Override
 		public Expression<T,TYPE> factor(final T that) {
 			return Element.of(factory.summand(that));
+		}
+
+		@Override
+		public Expression<T, TYPE> letter(TYPE type) {
+			return Element.of(type);
+		}
+
+		@Override
+		public Type.Factory<TYPE, T> alphabet() {
+			return factory;
 		}
 	}
 
@@ -168,7 +174,7 @@ public abstract class Expression<T, TYPE extends Container<TYPE,T>> implements L
 		return convert().random(random);
 	}
 
-	public interface Visitor<T, TYPE extends Container<TYPE,T>, R> {
+	public interface Visitor<T, TYPE extends Type<TYPE,T>, R> {
 
 		R handle(Complement<T,TYPE> that);
 		R handle(Element<T,TYPE> that);

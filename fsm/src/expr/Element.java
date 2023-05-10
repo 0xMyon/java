@@ -3,11 +3,10 @@ package expr;
 import java.util.List;
 import java.util.function.Function;
 
-import lang.Container;
 import lang.Language;
 import lang.Type;
 
-public class Element<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYPE> {
+public class Element<T, TYPE extends Type<TYPE,T>> extends Expression<T,TYPE> {
 
 	private final TYPE element;
 
@@ -19,14 +18,16 @@ public class Element<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYP
 		return this.element;
 	}
 
-	public static <T, TYPE extends Container<TYPE,T>> Expression<T,TYPE> of(final TYPE element) {
+	public static <T, TYPE extends Type<TYPE,T>> Expression<T,TYPE> of(final TYPE element) {
 		return new Element<T,TYPE>(element);
 	}
 
 	@Override
-	public <THAT extends Language<THAT, U>, U, FACTORY extends Language.Factory<THAT,U>> 
-	THAT convert(final FACTORY factory, final Function<T, U> function) {
-		return element.convert(factory, function.andThen(List::of));
+	public <THAT extends Language<THAT, U, TYPE2>, U, TYPE2 extends Type<TYPE2, U>, FACTORY extends Language.Factory<THAT,U,TYPE2>> 
+	THAT convert(final FACTORY factory, final Function<TYPE,TYPE2> FUNCTION) {
+		var r =factory.letter(FUNCTION.apply(element));
+		System.out.println(toString()+" -> "+r.toString());
+		return r;
 	}
 	
 	@Override
@@ -53,7 +54,7 @@ public class Element<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYP
 	}
 	
 	@Override
-	public Language.Factory<Expression<T, TYPE>, T> factory() {
+	public Language.Factory<Expression<T, TYPE>, T, TYPE> factory() {
 		return new Factory<>(element.factory());
 	}
 	

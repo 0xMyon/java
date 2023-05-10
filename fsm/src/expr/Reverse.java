@@ -2,10 +2,10 @@ package expr;
 
 import java.util.function.Function;
 
-import lang.Container;
 import lang.Language;
+import lang.Type;
 
-public class Reverse<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYPE> {
+public class Reverse<T, TYPE extends Type<TYPE,T>> extends Expression<T,TYPE> {
 
 	private final Expression<T,TYPE> reverse;
 	
@@ -13,7 +13,7 @@ public class Reverse<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYP
 		this.reverse = reverse;
 	}
 	
-	public static <T, TYPE extends Container<TYPE,T>> Expression<T,TYPE> of(Expression<T,TYPE> that) {
+	public static <T, TYPE extends Type<TYPE,T>> Expression<T,TYPE> of(Expression<T,TYPE> that) {
 		if (that instanceof Reverse) 
 			return ((Reverse<T,TYPE>) that).reverse();
 		else
@@ -25,9 +25,9 @@ public class Reverse<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYP
 	}
 
 	@Override
-	public <THAT extends Language<THAT, U>, U, FACTORY extends Language.Factory<THAT,U>> 
-	THAT convert(final FACTORY factory, final Function<T, U> function) {
-		return reverse.convert(factory, function).reverse();
+	public <THAT extends Language<THAT, U, TYPE2>, U, TYPE2 extends Type<TYPE2, U>, FACTORY extends Language.Factory<THAT,U,TYPE2>> 
+	THAT convert(final FACTORY factory, final Function<TYPE,TYPE2> FUNCTION) {
+		return reverse.convert(factory, FUNCTION).reverse();
 	}
 	
 	@Override
@@ -36,7 +36,7 @@ public class Reverse<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYP
 	}
 	
 	@Override
-	public Language.Factory<Expression<T, TYPE>, T> factory() {
+	public Language.Factory<Expression<T, TYPE>, T, TYPE> factory() {
 		return reverse.factory();
 	}
 	

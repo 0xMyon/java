@@ -30,7 +30,7 @@ import util.Tuple;
  * @param <T>
  * @param <R>
  */
-public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machine<T,R,TYPE>, T>, Function<List<T>, List<R>> {
+public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machine<T,R,TYPE>, T, TYPE>, Function<List<T>, List<R>> {
 
 	/**
 	 * indication if the empty word is contained
@@ -62,6 +62,11 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machin
 	protected Machine(final Type.Factory<TYPE, T> factory, final boolean epsilon) {
 		this.factory = factory;
 		this.epsilon = epsilon;
+	}
+	
+	protected Machine(final Type.Factory<TYPE, T> factory, final TYPE type) {
+		this(factory, false);
+		transition(initial, type, state(true));
 	}
 
 	@SafeVarargs
@@ -611,14 +616,13 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machin
 	}
 
 	@Override
-	public <THAT extends Language<THAT, U>, U, FACTORY extends Language.Factory<THAT, U>> THAT convert(final FACTORY factory, final Function<T,U> function) {
+	public <THAT extends Language<THAT, U, TYPE2>, U, TYPE2 extends Type<TYPE2, U>, FACTORY extends Language.Factory<THAT, U, TYPE2>> 
+	THAT convert(final FACTORY factory, Function<TYPE, TYPE2> FUNCTION) {
 		final Machine<List<U>, R, THAT> result = new Machine<>(factory);
 
-
 		final Map<State<T,R,TYPE>, State<List<U>,R,THAT>> s1 = 
-				result.include(this, n -> n.convert(factory, function.andThen(List::of)));
-
-
+				result.include(this, FUNCTION.andThen(factory::letter));
+		
 		result.transition(result.initial, factory.epsilon(), s1.get(this.initial));
 
 		var newFinal = result.state(true);
@@ -644,12 +648,11 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machin
 		});
 		result.removeUnreachable();
 		
-		//System.out.println("k "+result.transitions);
 		
-		return result.transitions().stream().findFirst().get().type();
+		return result.transitions().stream().findFirst().map(Transition::type).orElse(factory.empty());
 	}
 
-	public static class Factory<T, R, TYPE extends Type<TYPE,T>> implements Language.Factory<Machine<T,R,TYPE>, T> {
+	public static class Factory<T, R, TYPE extends Type<TYPE,T>> implements Language.Factory<Machine<T,R,TYPE>, T, TYPE> {
 
 		public Factory(final Type.Factory<TYPE, T> factory) {
 			this.factory = factory;
@@ -668,6 +671,15 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machin
 		@Override
 		public Machine<T, R, TYPE> factor(final T that) {
 			return new Machine<>(factory, that);
+		}
+		@Override
+		public Machine<T, R, TYPE> letter(TYPE type) {
+			return new Machine<>(factory, type);
+		}
+		
+		@Override
+		public Type.Factory<TYPE, T> alphabet() {
+			return factory;
 		}
 
 	}

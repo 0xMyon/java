@@ -6,19 +6,19 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import lang.Container;
 import lang.Language;
+import lang.Type;
 
-public abstract class Composite<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYPE> {
+public abstract class Composite<T, TYPE extends Type<TYPE,T>> extends Expression<T,TYPE> {
 
 	private final Collection<Expression<T,TYPE>> elements;
 	
-	Container.Factory<TYPE,T> underlying_factory() {
+	Type.Factory<TYPE,T> underlying_factory() {
 		return factory;
 	}
 	
 	
-	protected Composite(Container.Factory<TYPE, T> factory, Collection<Expression<T,TYPE>> elements) {
+	protected Composite(Type.Factory<TYPE, T> factory, Collection<Expression<T,TYPE>> elements) {
 		this.elements = elements;
 		this.factory = factory;
 	}
@@ -50,12 +50,12 @@ public abstract class Composite<T, TYPE extends Container<TYPE,T>> extends Expre
 	}
 	*/
 	
-	static <T, TYPE extends Container<TYPE,T>> Expression<T,TYPE> of(@SuppressWarnings("rawtypes") 
+	static <T, TYPE extends Type<TYPE,T>> Expression<T,TYPE> of(@SuppressWarnings("rawtypes") 
 		Class<? extends Composite> clazz, 
 		Stream<Expression<T,TYPE>> stream, 
-		BiFunction<Container.Factory<TYPE, T>, Collection<Expression<T,TYPE>>, Expression<T,TYPE>> f, 
+		BiFunction<Type.Factory<TYPE, T>, Collection<Expression<T,TYPE>>, Expression<T,TYPE>> f, 
 		Collector<Expression<T,TYPE>, ?, ? extends Collection<Expression<T,TYPE>>> collector,
-		Container.Factory<TYPE, T> factory
+		Type.Factory<TYPE, T> factory
 	) {
 		return stream.map(x -> {
 			if (clazz.isInstance(x)) {
@@ -69,10 +69,10 @@ public abstract class Composite<T, TYPE extends Container<TYPE,T>> extends Expre
 	}
 
 	
-	private final Container.Factory<TYPE, T> factory;
+	private final Type.Factory<TYPE, T> factory;
 	
 	@Override
-	public Language.Factory<Expression<T, TYPE>, T> factory() {
+	public Language.Factory<Expression<T, TYPE>, T, TYPE> factory() {
 		return new Factory<>(factory);
 	}
 	

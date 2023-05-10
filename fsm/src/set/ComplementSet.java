@@ -179,4 +179,8 @@ public class ComplementSet<T, TYPE extends Set<TYPE,T>> implements Type<Compleme
 			return set.random(random);
 	}
 
+	public static <T> ComplementSet.Factory<T, FiniteSet<T>> FACTORY() {
+		return new ComplementSet.Factory<>(new FiniteSet.Factory<>());
+	}
+
 }

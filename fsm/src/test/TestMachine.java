@@ -5,13 +5,25 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Random;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
+import expr.Expression;
 import fsm.CharMachine;
+import fsm.Machine;
 import lang.Language;
+import lang.Type;
 
 class TestMachine {
 
+	@org.junit.jupiter.api.Test
+	void testIsolated() {
+		
+		
+		
+		final CharMachine a = new CharMachine('a');
+		checkConversion(a.complement());
+	}
 
 	@org.junit.jupiter.api.Test
 	void testEqualence() {
@@ -58,12 +70,15 @@ class TestMachine {
 
 		final var A = a.complement();
 
+		checkConversion(a);
+		
 		System.out.println("!a := "+A);
+		checkConversion(A);
 
 		assertTrue(a.complement().containsAll(b));
 		assertFalse(a.complement().containsAll(a));
 
-		System.out.println("!!a := "+a.complement().complement());
+		checkConversion(a.complement().complement());
 
 		assertTrue(a.complement().complement().isEqual(a));
 
@@ -71,19 +86,15 @@ class TestMachine {
 		assertFalse(ab.containsAll(a));
 		assertFalse(a.containsAll(a.optional()));
 
-		System.out.println("!a+b:= "+a.unite(b).complement());
-		System.out.println("!!a+b:= "+a.unite(b).complement().complement());
-
-		System.out.println("a+b & a+c := "+a.unite(b).intersect(a.unite(c)));
-
-
-
-		System.out.println("a+b-b := "+a.unite(b).minus(b));
-
-		System.out.println("a-a := "+a.minus(a));
-
-		System.out.println("a+ := "+a.iterate());
-		System.out.println("a++ := "+a.iterate().iterate());
+		checkConversion(a.unite(b).complement());
+		checkConversion(a.unite(b).complement().complement());
+		checkConversion(a.unite(b).intersect(a.unite(c)));
+		
+		checkConversion(a.unite(b).minus(b));
+		checkConversion(a.minus(a));
+		checkConversion(a.iterate());
+		checkConversion(a.iterate().iterate());
+		
 
 		// (a++)++ == a++
 		assertTrue(a.iterate().isEqual(a.iterate().iterate()));
@@ -91,19 +102,19 @@ class TestMachine {
 		// !(a||b) == (!a)&&(!b)
 		assertTrue(a.unite(b).complement().isEqual(a.complement().intersect(b.complement())));
 
-		System.out.println("a && !a := "+a.intersect(a.complement()));
-		System.out.println("a || !a := "+a.complement().unite(a));
-		System.out.println("(a || !a)! := "+a.complement().unite(a).complement());
-
+		checkConversion(a.intersect(a.complement()));
+		checkConversion(a.complement().unite(a));
+		checkConversion(a.complement().unite(a).complement());
+		
 		assertTrue(a.complement().unite(a).complement().isEqual(a.intersect(a.complement())));
 
 		// a && !a == 0
 		assertTrue(a.complement().unite(a).complement().isEmpty());
 		assertTrue(a.intersect(a.complement()).isEmpty());
-
-
-		System.out.println("a || b -- b := "+a.unite(b).minus(b));
-		System.out.println("a || b -- a := "+a.unite(b).minus(a));
+	
+		checkConversion(a.unite(b).minus(b));
+		checkConversion(a.unite(b).minus(a));
+		
 
 		assertTrue(a.unite(b).minus(b).isEqual(a));
 		assertTrue(a.unite(b).minus(a).isEqual(b));
@@ -114,6 +125,14 @@ class TestMachine {
 		assertTrue(e.parallel(e).isEqual(e));
 
 
+	}
+	
+	
+	<T, R, TYPE extends Type<TYPE, T>> void  checkConversion(Machine<T, R, TYPE> m) {
+		System.out.println(m);
+		var ex = m.convert(Expression.<T>FACTORY());
+		var M = ex.convert(m.factory());
+		assertTrue(M.isEqual(m), M+" <"+ex+"> "+m);
 	}
 
 	@org.junit.jupiter.api.Test
@@ -268,12 +287,19 @@ class TestMachine {
 		testAll(ab.parallel(ab), Stream.of("abab", "aabb"), true);
 		testAll(ab.parallel(ab), Stream.of("", "a", "b", "aa", "bb"), false);
 
+		var a_na = a.concat(a.factory().letter(a.factory().alphabet().empty().complement()));
+		System.out.println("a.![] = "+a_na);
+		testAll(a_na, Stream.of("aa", "ab"), true);
+		testAll(a_na, Stream.of("", "a", "b", "bb", "abc"), false);
+		
+		
+		
 		assertTrue(a.initial().toString().startsWith("<I"));
 		a.finals().forEach(s-> assertTrue(s.toString().endsWith("F>")));
 
 	}
 
-	void testAll(final Language<?, Character> fsm, final Stream<String> s, final boolean exp) {
+	void testAll(final Language<?, Character, ?> fsm, final Stream<String> s, final boolean exp) {
 		//System.out.println(fsm);
 		s.forEach(x -> {
 			assertEquals(exp, fsm.contains(x.chars().<Character>mapToObj(c->(char)c)), fsm+" does "+(exp?"not ":"")+"contain "+x);

@@ -3,13 +3,12 @@ package expr;
 import java.util.List;
 import java.util.function.Function;
 
-import lang.Container;
 import lang.Language;
 import lang.Type;
 
-public class Complement<T, TYPE extends Container<TYPE,T>> extends Expression<T,TYPE> {
+public class Complement<T, TYPE extends Type<TYPE,T>> extends Expression<T,TYPE> {
 
-	static <T, TYPE extends Container<TYPE,T>> Expression<T,TYPE> of(final Expression<T,TYPE> that) {
+	static <T, TYPE extends Type<TYPE,T>> Expression<T,TYPE> of(final Expression<T,TYPE> that) {
 		if (that instanceof Complement) {
 			return ((Complement<T,TYPE>)that).complement;
 		} else {
@@ -25,9 +24,9 @@ public class Complement<T, TYPE extends Container<TYPE,T>> extends Expression<T,
 
 	
 	@Override
-	public <THAT extends Language<THAT, U>, U, FACTORY extends Language.Factory<THAT,U>> 
-	THAT convert(final FACTORY factory, final Function<T, U> function) {
-		return complement.convert(factory, function).complement();
+	public <THAT extends Language<THAT, U, TYPE2>, U, TYPE2 extends Type<TYPE2, U>, FACTORY extends Language.Factory<THAT,U,TYPE2>> 
+	THAT convert(final FACTORY factory, final Function<TYPE,TYPE2> FUNCTION) {
+		return complement.convert(factory, FUNCTION).complement();
 	}
 
 	@Override
@@ -48,7 +47,7 @@ public class Complement<T, TYPE extends Container<TYPE,T>> extends Expression<T,
 	}
 
 	@Override
-	public Language.Factory<Expression<T, TYPE>, T> factory() {
+	public Language.Factory<Expression<T, TYPE>, T, TYPE> factory() {
 		return complement.factory();
 	}
 	
