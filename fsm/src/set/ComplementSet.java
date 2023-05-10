@@ -95,7 +95,7 @@ public class ComplementSet<T, TYPE extends Set<TYPE,T>> implements Type<Compleme
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(complement);
+		return Objects.hash(complement, set);
 	}
 
 	@Override
