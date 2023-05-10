@@ -19,8 +19,12 @@ public interface Set<THIS extends Set<THIS, T>, T> extends Container<THIS, T>, H
 	 */
 	THIS minus(final THIS that);
 
-
-
+	
+	default THIS xor(final THIS that) {
+		return this.unite(that).minus(this.intersect(that));
+	}
+	
+	
 	/**
 	 * @return the difference {@code that - this}
 	 */

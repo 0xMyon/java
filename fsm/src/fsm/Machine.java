@@ -306,6 +306,11 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machin
 	public Machine<T,R,TYPE> xor(final Machine<T,R,TYPE> that) {
 		return operation(that, BooleanOperator.antivalence);
 	}
+	
+	@Override
+	public Machine<T,R,TYPE> implies(final Machine<T,R,TYPE> that) {
+		return operation(that, BooleanOperator.implication);
+	}
 
 	@Override
 	public Machine<T,R,TYPE> parallel(final Machine<T,R,TYPE> that) {

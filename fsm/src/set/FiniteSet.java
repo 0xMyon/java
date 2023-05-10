@@ -43,6 +43,13 @@ public class FiniteSet<T> implements Set<FiniteSet<T>, T> {
 	public FiniteSet<T> minus(final FiniteSet<T> that) {
 		return new FiniteSet<>(elements.stream().filter(e -> !that.contains(e)));
 	}
+	
+	@Override
+	public FiniteSet<T> xor(final FiniteSet<T> that) {
+		return new FiniteSet<>(
+				Stream.concat(elements.stream(), that.elements.stream()).distinct()
+				.filter(e -> this.contains(e) ^ that.contains(e)));
+	}
 
 	@Override
 	public boolean contains(final T that) {
@@ -123,5 +130,7 @@ public class FiniteSet<T> implements Set<FiniteSet<T>, T> {
 		return elements.stream().skip(random.nextInt(elements.size()))
 				.findFirst().orElseThrow(()->new RuntimeException("empty"));
 	}
+
+	
 
 }
