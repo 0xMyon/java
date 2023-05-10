@@ -21,12 +21,12 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 
 	@Override
 	public Expression<T,TYPE> concat(final Expression<T,TYPE> that) {
-		return Sequence.of(underlying_factory(), this, that);
+		return Sequence.of(factory().alphabet(), this, that);
 	}
 
 	@Override
 	public Expression<T,TYPE> unite(final Expression<T,TYPE> that) {
-		return Union.of(underlying_factory(), this, that);
+		return Union.of(factory().alphabet(), this, that);
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 
 	@Override
 	public Expression<T,TYPE> parallel(final Expression<T,TYPE> that) {
-		return Parallel.of(underlying_factory(), this, that);
+		return Parallel.of(factory().alphabet(), this, that);
 	}
 
 	private final Machine.Factory<T, Void, ComplementSet<T, FiniteSet<T>>> MACHINE = 
@@ -113,8 +113,6 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 	public static <T> Factory<T, ComplementSet<T, FiniteSet<T>>> FACTORY() {
 		return new Factory<>(ComplementSet.FACTORY());
 	}
-
-	abstract Container.Factory<TYPE,T> underlying_factory();
 	
 	public static class Factory<T, TYPE extends Type<TYPE,T>> implements Language.Factory<Expression<T,TYPE>, T, TYPE> {
 		

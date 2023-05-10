@@ -57,9 +57,5 @@ public class Element<T, TYPE extends Type<TYPE,T>> extends Expression<T,TYPE> {
 	public Language.Factory<Expression<T, TYPE>, T, TYPE> factory() {
 		return new Factory<>(element.factory());
 	}
-	
-	Container.Factory<TYPE,T> underlying_factory() {
-		return element.factory();
-	}
 
 }

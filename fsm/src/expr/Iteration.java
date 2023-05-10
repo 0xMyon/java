@@ -76,8 +76,4 @@ public class Iteration<T, TYPE extends Type<TYPE,T>> extends Expression<T,TYPE> 
 		return base.factory();
 	}
 	
-	Container.Factory<TYPE,T> underlying_factory() {
-		return base.underlying_factory();
-	}
-	
 }
