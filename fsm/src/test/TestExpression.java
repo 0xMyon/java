@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import expr.Expression;
 import fsm.Machine;
 import lang.Language;
-import lang.Type;
-import set.ComplementSet;
 
 class TestExpression {
 

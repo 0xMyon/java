@@ -475,11 +475,7 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language<Machin
 
 	@Override
 	public String toString() {
-		try {
-			return convert(Expression.FACTORY()).toString();
-		} catch (final Exception e) {
-			return transitions.toString()+(hasEpsilon()?"+e":"");
-		}
+		return transitions.toString()+(hasEpsilon()?"+e":"");
 	}
 
 	@Override

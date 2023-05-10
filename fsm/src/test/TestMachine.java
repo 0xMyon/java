@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Random;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import expr.Expression;
