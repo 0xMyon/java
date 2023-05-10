@@ -36,7 +36,12 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 
 	@Override
 	public Expression<T,TYPE> optional() {
-		return unite(factory().epsilon());
+		return Iteration.of(this, Iteration.Version.Optional);
+	}
+	
+	@Override
+	public Expression<T,TYPE> star() {
+		return Iteration.of(this, Iteration.Version.Star);
 	}
 
 	@Override
@@ -92,19 +97,6 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 	public Expression<T,TYPE> THIS() {
 		return this;
 	}
-
-	/*
-	public static <T, TYPE extends Container<TYPE, T>> Expression<T,TYPE> epsilon() {
-		return Sequence.of();
-	}
-	*/
-
-	/*
-	@Override
-	public Factory<T,TYPE> factory() {
-		return new Factory<>();
-	}
-	*/
 	
 	/**
 	 * @param <T>

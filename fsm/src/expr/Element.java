@@ -14,10 +14,6 @@ public class Element<T, TYPE extends Type<TYPE,T>> extends Expression<T,TYPE> {
 		this.element = that;
 	}
 
-	public TYPE get() {
-		return this.element;
-	}
-
 	public static <T, TYPE extends Type<TYPE,T>> Expression<T,TYPE> of(final TYPE element) {
 		return new Element<T,TYPE>(element);
 	}

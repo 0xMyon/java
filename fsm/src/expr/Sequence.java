@@ -43,6 +43,20 @@ public class Sequence<T, TYPE extends Type<TYPE,T>> extends Composite<T,TYPE> {
 		return "("+elements().stream().map(Object::toString).reduce((a,b) -> a+", "+b).orElse("")+")";
 	}
 	
+	
+	public Expression<T, TYPE> star() {
+		return elements().isEmpty() ? this : super.star();
+	}
+	
+	public Expression<T, TYPE> optional() {
+		return elements().isEmpty() ? this : super.optional();
+	}
+	
+	public Expression<T, TYPE> iterate() {
+		return elements().isEmpty() ? this : super.iterate();
+	}
+	
+	
 	@Override
 	public <R> R accept(Visitor<T, TYPE, R> visitor) {
 		return visitor.handle(this);
