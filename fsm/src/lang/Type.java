@@ -46,7 +46,6 @@ public interface Type<THIS extends Type<THIS, T>, T> extends lang.Set<THIS, T>{
 		return this.complement().unite(that).complement();
 	}
 	
-	@Override
 	default THIS implies(final THIS that) {
 		return this.complement().unite(that);
 	}
