@@ -43,12 +43,31 @@ public class Abstraction<T, TYPE extends Container<TYPE, T>> implements IAbstrac
 		return variable.isReducible() || term.isReducible();
 	}
 
+	static <T, TYPE extends Container<TYPE,T>> Map<Variable<T,TYPE>, Reducible<T,TYPE>> clone(Map<Variable<T,TYPE>, Reducible<T,TYPE>> context) {
+		Map<Variable<T,TYPE>, Reducible<T,TYPE>> clone = new HashMap<>();
+		clone.putAll(context);
+		return clone;
+	}
+	
 	@Override
 	public boolean isMapping(final Reducible<T,TYPE> term, final Map<Variable<T,TYPE>, Reducible<T,TYPE>> context) {
 		if (term instanceof Abstraction) {
 			final Abstraction<T,TYPE> that = (Abstraction<T,TYPE>) term;
-			return variable.isMapping(that.variable, context) && this.term.isMapping(that.term, context);
+			var clone = clone(context);
+			if (variable.isMapping(that.variable, clone) && this.term.isMapping(that.term, clone)) {
+				context.putAll(clone);
+				return true;
+			}	
 		}
+		
+		if (this.term.isMapping(term, context)) {
+			if (context.containsKey(variable)) {
+				return true;
+			} else if (this.term.freeVars().noneMatch(variable::equals)) {
+				return true;
+			}
+		}
+				
 		return false;
 	}
 
