@@ -13,10 +13,10 @@ import java.util.stream.Stream;
  * @param <THIS>
  * @param <T>
  */
-public interface Language<THIS extends Language<THIS, T, TYPE>, T, TYPE extends Type<TYPE,T>> extends Type<THIS, List<T>>, Sequence<THIS, T> {
+public interface Language<THIS extends Language<THIS, T, LIST, TYPE>, T, LIST, TYPE extends Type<TYPE,T>> extends Type<THIS, LIST>, Sequence<THIS, T> {
 
 	@Override
-	Factory<THIS, T, TYPE> factory();
+	Factory<THIS, T, LIST, TYPE> factory();
 
 	/**
 	 * @return the iterated {@link Language} {@code this+}
@@ -42,17 +42,6 @@ public interface Language<THIS extends Language<THIS, T, TYPE>, T, TYPE extends 
 	}
 
 
-	/**
-	 * @return true, if {@link Factory#epsilon()} is contained
-	 * @see Type#contains(Object)
-	 */
-	default boolean hasEpsilon() {
-		return contains(List.of());
-	}
-
-	default boolean contains(final Stream<T> s) {
-		return contains(s.collect(Collectors.toList()));
-	}
 
 
 	@Override
@@ -69,14 +58,17 @@ public interface Language<THIS extends Language<THIS, T, TYPE>, T, TYPE extends 
 	default boolean isEnclosed(final THIS that) {
 		return factory().universe().concat(that).concat(factory().universe()).containsAll(THIS());
 	}
+	
+	/**
+	 * @return true, if {@link Factory#epsilon()} is contained
+	 * @see Type#contains(Object)
+	 */
+	default boolean hasEpsilon() {
+		return contains(factory().listEmpty());
+	}
 
 
-	interface Factory<THIS extends Language<THIS, T, TYPE>, T, TYPE extends Type<TYPE,T>> extends Type.Factory<THIS, List<T>>, Sequence.Factory<THIS, T> {
-
-		@Override
-		public default THIS summand(final List<T> that) {
-			return sequence(that.stream().map(this::factor));
-		}
+	interface Factory<THIS extends Language<THIS, T, LIST, TYPE>, T, LIST, TYPE extends Type<TYPE,T>> extends Type.Factory<THIS, LIST>, Sequence.Factory<THIS, T> {
 
 		@SuppressWarnings("unchecked")
 		default THIS parallel(final THIS... that) {
@@ -89,6 +81,8 @@ public interface Language<THIS extends Language<THIS, T, TYPE>, T, TYPE extends 
 		
 		public THIS letter(TYPE type);
 		
+		LIST listEmpty();
+		
 		public Type.Factory<TYPE, T> alphabet();
 		
 	}
@@ -99,15 +93,15 @@ public interface Language<THIS extends Language<THIS, T, TYPE>, T, TYPE extends 
 	 * @param factory of target {@link Language}
 	 * @return converted object in target {@link Language}
 	 */
-	<THAT extends Language<THAT, U, TYPE2>, U, TYPE2 extends Type<TYPE2,U>, FACTORY extends Language.Factory<THAT, U, TYPE2>> 
+	<THAT extends Language<THAT, U, ULIST, TYPE2>, U, ULIST, TYPE2 extends Type<TYPE2,U>, FACTORY extends Language.Factory<THAT, U, ULIST, TYPE2>> 
 	THAT convert(final FACTORY factory, final Function<TYPE,TYPE2> FUNCTION);
 	
-	default <THAT extends Language<THAT, U, TYPE2>, U, TYPE2 extends Type<TYPE2,U>, FACTORY extends Language.Factory<THAT, U, TYPE2>> 
+	default <THAT extends Language<THAT, U, ULIST, TYPE2>, U, ULIST, TYPE2 extends Type<TYPE2,U>, FACTORY extends Language.Factory<THAT, U, ULIST, TYPE2>> 
 	THAT convertX(final FACTORY factory, final Function<TYPE,TYPE2> FUNCTION) {
 		return convert(factory, FUNCTION);
 	}
 	
-	default <THAT extends Language<THAT, T, TYPE2>, TYPE2 extends Type<TYPE2,T>, FACTORY extends Language.Factory<THAT, T, TYPE2>> 
+	default <THAT extends Language<THAT, T, LIST, TYPE2>, TYPE2 extends Type<TYPE2,T>, FACTORY extends Language.Factory<THAT, T, LIST, TYPE2>> 
 	THAT convert(final FACTORY factory) {
 		return convertX(factory, x -> x.convert(factory.alphabet()));
 	}
@@ -115,11 +109,34 @@ public interface Language<THIS extends Language<THIS, T, TYPE>, T, TYPE extends 
 	
 	@Override
 	default <THAT extends Type<THAT, U>, U, FACTORY extends Type.Factory<THAT, U>> 
-	THAT convert(final FACTORY factory, final Function<List<T>, U> function) {
+	THAT convert(final FACTORY factory, final Function<LIST, U> function) {
 		throw new UnsupportedOperationException();
 	}
 	
 
+	interface Naive<THIS extends Naive<THIS, T, TYPE>, T, TYPE extends Type<TYPE,T>> extends Language<THIS, T, List<T>, TYPE> {
+
+		@Override
+		Factory<THIS, T, TYPE> factory();
+
+		
+		interface Factory<THIS extends Naive<THIS, T, TYPE>, T, TYPE extends Type<TYPE,T>> extends Language.Factory<THIS, T, List<T>, TYPE> {
+
+			default List<T> listEmpty() {
+				return List.of();
+			}
+			
+			@Override
+			default public THIS summand(final List<T> that) {
+				return sequence(that.stream().map(this::factor));
+			}
+			
+		}
+
+		default boolean contains(final Stream<T> s) {
+			return contains(s.collect(Collectors.toList()));
+		}
+	}
 
 
 }

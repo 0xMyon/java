@@ -72,7 +72,7 @@ public abstract class Composite<T, TYPE extends Type<TYPE,T>> extends Expression
 	private final Type.Factory<TYPE, T> factory;
 	
 	@Override
-	public Language.Factory<Expression<T, TYPE>, T, TYPE> factory() {
+	public Language.Naive.Factory<Expression<T, TYPE>, T, TYPE> factory() {
 		return new Factory<>(factory);
 	}
 	

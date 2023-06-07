@@ -50,7 +50,7 @@ public class Iteration<T, TYPE extends Type<TYPE,T>> extends Expression<T,TYPE> 
 	}
 	
 	@Override
-	public <THAT extends Language<THAT, U, TYPE2>, U, TYPE2 extends Type<TYPE2, U>, FACTORY extends Language.Factory<THAT,U,TYPE2>> 
+	public <THAT extends Language<THAT, U, ULIST, TYPE2>, U, ULIST, TYPE2 extends Type<TYPE2, U>, FACTORY extends Language.Factory<THAT,U,ULIST,TYPE2>> 
 	THAT convert(final FACTORY factory, final Function<TYPE,TYPE2> FUNCTION) {
 		switch (type) {
 			case Optional: return base.convert(factory, FUNCTION).optional();
@@ -72,7 +72,7 @@ public class Iteration<T, TYPE extends Type<TYPE,T>> extends Expression<T,TYPE> 
 	}
 	
 	@Override
-	public Language.Factory<Expression<T, TYPE>, T, TYPE> factory() {
+	public Language.Naive.Factory<Expression<T, TYPE>, T, TYPE> factory() {
 		return base.factory();
 	}
 	

@@ -10,7 +10,7 @@ import lang.Type;
 import set.ComplementSet;
 import set.FiniteSet;
 
-public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Language<Expression<T,TYPE>, T, TYPE> {
+public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Language.Naive<Expression<T,TYPE>, T, TYPE> {
 
 	/*
 	public <R,RTYPE extends Type<RTYPE,R>> Expression<R,RTYPE> map(final Function<T, R> function) {
@@ -106,7 +106,7 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 		return new Factory<>(ComplementSet.FACTORY());
 	}
 	
-	public static class Factory<T, TYPE extends Type<TYPE,T>> implements Language.Factory<Expression<T,TYPE>, T, TYPE> {
+	public static class Factory<T, TYPE extends Type<TYPE,T>> implements Language.Naive.Factory<Expression<T,TYPE>, T, TYPE> {
 		
 		public Factory(Type.Factory<TYPE,T> factory) {
 			this.factory = factory;

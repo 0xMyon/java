@@ -25,7 +25,7 @@ public class Parallel<T, TYPE extends Type<TYPE,T>> extends Composite<T,TYPE> {
 	}
 	
 	@Override
-	public <THAT extends Language<THAT, U, TYPE2>, U, TYPE2 extends Type<TYPE2, U>, FACTORY extends Language.Factory<THAT,U,TYPE2>> 
+	public <THAT extends Language<THAT, U, ULIST, TYPE2>, U, ULIST, TYPE2 extends Type<TYPE2, U>, FACTORY extends Language.Factory<THAT,U,ULIST,TYPE2>> 
 	THAT convert(final FACTORY factory, final Function<TYPE,TYPE2> FUNCTION) {
 		return factory.parallel(elements().stream().map(x -> x.convert(factory, FUNCTION)));
 	}

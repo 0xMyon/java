@@ -26,7 +26,7 @@ class TestExpression {
 
 	private static final String[] ALL = {"", "a", "b", "aa", "ab", "ba", "bb"};
 
-	<THIS extends Language<THIS, Character, ?>, FACTORY extends Language.Factory<THIS, Character, ?>> 
+	<THIS extends Language.Naive<THIS, Character, ?>, FACTORY extends Language.Naive.Factory<THIS, Character, ?>> 
 	void testLang(FACTORY factory) {
 		
 		System.out.println("testLang("+factory.getClass().getName()+")");
@@ -77,7 +77,7 @@ class TestExpression {
 		
 	}
 	
-	<THIS extends Language<THIS, Character, ?>> void testContains(THIS lang, String...in) {
+	<THIS extends Language.Naive<THIS, Character, ?>> void testContains(THIS lang, String...in) {
 		testAll(lang, Stream.of(in), true);
 		testAll(lang, Stream.of(ALL).filter(c -> !Arrays.asList(in).contains(c)), false);
 		
@@ -85,7 +85,7 @@ class TestExpression {
 		testAll(lang, Stream.of(lang.random(new Random()).stream().reduce("", (s,c)->s+c, (a,b)->a+b)), true);
 	}
 	
-	<THIS extends Language<THIS, Character, ?>> void testAll(THIS fsm, Stream<String> s, boolean exp) {
+	<THIS extends Language.Naive<THIS, Character, ?>> void testAll(THIS fsm, Stream<String> s, boolean exp) {
 		s.forEach(x -> {
 			assertEquals(exp, fsm.contains(x.chars().<Character>mapToObj(c->(char)c)), fsm+" does "+(exp?"not ":"")+"contain '"+x+"'");
 		});

@@ -298,7 +298,7 @@ class TestMachine {
 
 	}
 
-	void testAll(final Language<?, Character, ?> fsm, final Stream<String> s, final boolean exp) {
+	void testAll(final Language.Naive<?, Character, ?> fsm, final Stream<String> s, final boolean exp) {
 		//System.out.println(fsm);
 		s.forEach(x -> {
 			assertEquals(exp, fsm.contains(x.chars().<Character>mapToObj(c->(char)c)), fsm+" does "+(exp?"not ":"")+"contain "+x);
