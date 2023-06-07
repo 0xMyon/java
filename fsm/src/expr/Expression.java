@@ -48,11 +48,11 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 	public Expression<T,TYPE> complement() {
 		return Complement.of(this);
 	}
-
+	
 
 	@Override
-	public Expression<T,TYPE> reverse() {
-		return Reverse.of(this);
+	public Expression<T, TYPE> reverse() {
+		return this;
 	}
 
 	@Override
@@ -170,7 +170,6 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 		R handle(Element<T,TYPE> that);
 		R handle(Iteration<T,TYPE> that);
 		R handle(Parallel<T,TYPE> that);
-		R handle(Reverse<T,TYPE> that);
 		R handle(Sequence<T,TYPE> that);
 		R handle(Union<T,TYPE> that);
 

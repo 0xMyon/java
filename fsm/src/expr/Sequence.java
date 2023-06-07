@@ -1,6 +1,8 @@
 package expr;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -61,5 +63,14 @@ public class Sequence<T, TYPE extends Type<TYPE,T>> extends Composite<T,TYPE> {
 	public <R> R accept(Visitor<T, TYPE, R> visitor) {
 		return visitor.handle(this);
 	}
+	
+
+	@Override
+	public Expression<T, TYPE> reverse() {
+		List<Expression<T,TYPE>> x = elements().stream().collect(Collectors.toList());
+		Collections.reverse(x);
+		return of(underlying_factory(), x.stream());
+	}
+
 	
 }
