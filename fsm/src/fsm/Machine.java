@@ -21,6 +21,7 @@ import lang.Language;
 import lang.Type;
 import set.ComplementSet;
 import set.FiniteSet;
+import util.Algorithm;
 import util.BooleanOperator;
 import util.Sets;
 import util.Tuple;
@@ -394,37 +395,42 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language.Naive<
 		// initial cleanup to reduce states
 		removeUnreachable();
 
-		//System.out.println("rem -> "+this);
-
 		final Machine<T,R,TYPE> result = new Machine<>(factory, epsilon);
-		final Map<Set<State<T,R,TYPE>>, State<T,R,TYPE>> map = result.include(
-				Sets.power(this.states()).stream(),
-				Sets.of(this.initial()),
-				x -> x.stream().anyMatch(State::isFinal)
+
+		final Map<Set<State<T,R,TYPE>>, State<T,R,TYPE>> map = new HashMap<>();
+		map.put(Set.of(this.initial), result.initial());
+		final Function<Set<State<T,R,TYPE>>, State<T,R,TYPE>> makeState = s -> {
+			if (!map.containsKey(s)) {
+				map.put(s, result.state(s.stream().anyMatch(State::isFinal)));
+			}
+			return map.get(s);
+		};
+
+		Algorithm.itterative(
+				Set.of(this.initial),
+				source -> {
+
+					final Set<TYPE> inputs = source.stream()
+							.map(State::nextSymbols)
+							.reduce(Stream.of(), Stream::concat)
+							.distinct()
+							.collect(Collectors.toSet());
+
+					// for each partition of the states input
+					return Type.partition(inputs).stream().map(x -> {
+						final Set<State<T,R,TYPE>> target = source.stream()
+								.map(s -> s.next(x))
+								.reduce(Stream.of(), Stream::concat)
+								.collect(Collectors.toSet());
+
+						// set the power-transition
+						result.transition(makeState.apply(source), x, makeState.apply(target));
+						return target;
+					});
+				}
 				);
 
-		// for each power-state
-		map.entrySet().forEach(e -> {
-			final Set<State<T,R,TYPE>> source = e.getKey();
-			final Set<TYPE> inputs = source.stream()
-					.map(State::nextSymbols)
-					.reduce(Stream.of(), Stream::concat)
-					.distinct()
-					.collect(Collectors.toSet());
-
-			// for each partition of the states input
-			Type.partition(inputs).stream().forEach(x -> {
-				final Set<State<T,R,TYPE>> target = source.stream()
-						.map(s -> s.next(x))
-						.reduce(Stream.of(), Stream::concat)
-						.collect(Collectors.toSet());
-
-				// set the power-transition
-				result.transition(map.get(source), x, map.get(target));
-			});
-		});
-
-		return result.removeUnreachable().identify();
+		return result.identify();
 	}
 
 
