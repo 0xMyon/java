@@ -457,7 +457,7 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language.Naive<
 		final Set<Tuple<State<T,R,TYPE>, State<T,R,TYPE>>> equalent = new HashSet<>();
 		states.stream().forEach(P -> {
 			states.stream().filter(Q -> Q.hashCode() < P.hashCode() && !Q.equals(P)).forEach(Q -> {
-				if ((P.isFinal() && Q.isFinal()) || (!P.isFinal() && !Q.isFinal())) {
+				if (P.isFinal() == Q.isFinal()) {
 					equalent.add(Tuple.of(P, Q));
 				}
 			});
@@ -476,7 +476,7 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language.Naive<
 						return !Objects.equals(PT, QT) && !equalent.contains(Tuple.of(PT, QT));
 					});
 
-		})) {};
+		}));
 
 		// combine remaining states
 		equalent.stream().forEach(current -> current.apply(State::combine));
