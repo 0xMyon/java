@@ -35,13 +35,13 @@ public class ComplementSet<T, TYPE extends Set<TYPE,T>> implements Type<Compleme
 
 	@Override
 	public ComplementSet<T,TYPE> unite(final ComplementSet<T,TYPE> that) {
-		return op(that, BooleanOperator.disjunction, Set::unite, Set::removed, Set::minus, Set::intersect);
+		return op(that, Boolean::logicalOr, Set::unite, Set::removed, Set::minus, Set::intersect);
 	}
 
 
 	@Override
 	public ComplementSet<T,TYPE> intersect(final ComplementSet<T,TYPE> that) {
-		return op(that, BooleanOperator.conjunction, Set::intersect, Set::minus, Set::removed, Set::unite);
+		return op(that, Boolean::logicalAnd, Set::intersect, Set::minus, Set::removed, Set::unite);
 	}
 
 	// TODO

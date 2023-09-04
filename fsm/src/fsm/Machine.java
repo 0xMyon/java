@@ -291,12 +291,12 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language.Naive<
 
 	@Override
 	public Machine<T,R,TYPE> unite(final Machine<T,R,TYPE> that) {
-		return operation(that, BooleanOperator.disjunction);
+		return operation(that, Boolean::logicalOr);
 	}
 
 	@Override
 	public Machine<T,R,TYPE> intersect(final Machine<T,R,TYPE> that) {
-		return operation(that, BooleanOperator.conjunction);
+		return operation(that, Boolean::logicalAnd);
 	}
 
 	@Override
@@ -305,7 +305,7 @@ public class Machine<T,R, TYPE extends Type<TYPE, T>> implements Language.Naive<
 	}
 
 	public Machine<T,R,TYPE> xor(final Machine<T,R,TYPE> that) {
-		return operation(that, BooleanOperator.antivalence);
+		return operation(that, Boolean::logicalXor);
 	}
 	
 	@Override
