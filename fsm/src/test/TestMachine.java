@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Random;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
+
 import expr.Expression;
 import fsm.CharMachine;
 import fsm.Machine;
@@ -15,16 +17,20 @@ import lang.Type;
 
 class TestMachine {
 
-	@org.junit.jupiter.api.Test
+	final CharMachine a = new CharMachine('a');
+
+
+	@Test
 	void testIsolated() {
-		
-		
-		
-		final CharMachine a = new CharMachine('a');
 		checkConversion(a.complement());
 	}
 
-	@org.junit.jupiter.api.Test
+	@Test
+	void testEmpty() {
+		checkConversion(a.complement().unite(a));
+	}
+
+	@Test
 	void testEqualence() {
 
 		//final Type<?, Number> M = new ComplementSet<>();
@@ -41,7 +47,7 @@ class TestMachine {
 
 		final CharMachine abc = new CharMachine("abc");
 		assertTrue(CharMachine.toString(abc.iterate().random(new Random())).matches("(abc)*"));
-		
+
 		final var a_b = a.unite(b);
 		final var ab = a.concat(b);
 		final var ba = b.concat(a);
@@ -70,7 +76,7 @@ class TestMachine {
 		final var A = a.complement();
 
 		checkConversion(a);
-		
+
 		System.out.println("!a := "+A);
 		checkConversion(A);
 
@@ -88,12 +94,12 @@ class TestMachine {
 		checkConversion(a.unite(b).complement());
 		checkConversion(a.unite(b).complement().complement());
 		checkConversion(a.unite(b).intersect(a.unite(c)));
-		
+
 		checkConversion(a.unite(b).minus(b));
 		checkConversion(a.minus(a));
 		checkConversion(a.iterate());
 		checkConversion(a.iterate().iterate());
-		
+
 
 		// (a++)++ == a++
 		assertTrue(a.iterate().isEqual(a.iterate().iterate()));
@@ -104,16 +110,16 @@ class TestMachine {
 		checkConversion(a.intersect(a.complement()));
 		checkConversion(a.complement().unite(a));
 		checkConversion(a.complement().unite(a).complement());
-		
+
 		assertTrue(a.complement().unite(a).complement().isEqual(a.intersect(a.complement())));
 
 		// a && !a == 0
 		assertTrue(a.complement().unite(a).complement().isEmpty());
 		assertTrue(a.intersect(a.complement()).isEmpty());
-	
+
 		checkConversion(a.unite(b).minus(b));
 		checkConversion(a.unite(b).minus(a));
-		
+
 
 		assertTrue(a.unite(b).minus(b).isEqual(a));
 		assertTrue(a.unite(b).minus(a).isEqual(b));
@@ -125,16 +131,16 @@ class TestMachine {
 
 
 	}
-	
-	
-	<T, R, TYPE extends Type<TYPE, T>> void  checkConversion(Machine<T, R, TYPE> m) {
-		System.out.println(m);
-		var ex = m.convert(Expression.<T>FACTORY());
-		var M = ex.convert(m.factory());
-		assertTrue(M.isEqual(m), M+" <"+ex+"> "+m);
+
+
+	<T, R, TYPE extends Type<TYPE, T>> void  checkConversion(final Machine<T, R, TYPE> m) {
+		//System.out.println(m);
+		final var ex = m.convert(Expression.<T>FACTORY());
+		final var M = ex.convert(m.factory());
+		assertTrue(m.isEqual(M), m+" <"+ex+"> "+M);
 	}
 
-	@org.junit.jupiter.api.Test
+	@Test
 	void testRevrerse() {
 
 		final CharMachine empty = new CharMachine();
@@ -212,7 +218,7 @@ class TestMachine {
 
 	}
 
-	@org.junit.jupiter.api.Test
+	@Test
 	void test() {
 
 		System.out.println("test()");
@@ -286,13 +292,13 @@ class TestMachine {
 		testAll(ab.parallel(ab), Stream.of("abab", "aabb"), true);
 		testAll(ab.parallel(ab), Stream.of("", "a", "b", "aa", "bb"), false);
 
-		var a_na = a.concat(a.factory().letter(a.factory().alphabet().empty().complement()));
+		final var a_na = a.concat(a.factory().letter(a.factory().alphabet().empty().complement()));
 		System.out.println("a.![] = "+a_na);
 		testAll(a_na, Stream.of("aa", "ab"), true);
 		testAll(a_na, Stream.of("", "a", "b", "bb", "abc"), false);
-		
-		
-		
+
+
+
 		assertTrue(a.initial().toString().startsWith("<I"));
 		a.finals().forEach(s-> assertTrue(s.toString().endsWith("F>")));
 

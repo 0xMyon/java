@@ -226,5 +226,4 @@ public class State<T,R,TYPE extends Type<TYPE, T>> {
 	}
 
 
-
 }
