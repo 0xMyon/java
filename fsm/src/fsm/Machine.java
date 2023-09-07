@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
@@ -108,13 +107,20 @@ implements Language.Naive<Machine<T, R, TYPE>, T, TYPE>, Function<List<T>, List<
 	 * @param type   that matches an input-element <T>
 	 * @param target {@link State} of the {@link Transition}
 	 */
-	void transition(final State<T,R,TYPE> source, final TYPE type, final State<T,R,TYPE> target) {
-		if (type.isEmpty())	return; // TODO this check should not be done
-		final Optional<Transition<T,R,TYPE>> tx = transitions.stream().filter(t->t.source()==source && t.target()==target).findFirst();
-		tx.ifPresentOrElse(t -> {
-			transitions.remove(t);
-			transitions.add(new Transition<T,R,TYPE>(source, type.unite(t.type()), target, t.result())); // TODO alter the type?
-		}, ()-> transitions.add(new Transition<T,R,TYPE>(source, type, target)));
+	void transition(final State<T, R, TYPE> source, final TYPE type, final State<T, R, TYPE> target) {
+		if (type.isEmpty())
+			return; // TODO this check should not be done
+
+		source.next.stream().filter(target::isTarget).findAny().ifPresentOrElse(
+				t -> t.unite(type),
+				()->{
+					final Transition<T,R,TYPE> t = new Transition<T, R, TYPE>(source, type, target);
+					transitions.add(t);
+					source.next.add(t);
+					target.prev.add(t);
+				}
+				);
+
 	}
 
 	/**
@@ -410,12 +416,26 @@ implements Language.Naive<Machine<T, R, TYPE>, T, TYPE>, Function<List<T>, List<
 	 * remove unreachable {@link State}
 	 */
 	private Machine<T, R, TYPE> removeUnreachable() {
-		while(states.removeIf(State::isUnreachable)) {
-			finals.removeIf(f -> !states.contains(f));
-			transitions.removeIf(t -> !states.contains(t.source()) || !states.contains(t.target()));
-		}
+		final Set<State<?,?,?>> removed = new HashSet<>();
+		while (states.removeIf(s -> {
+			if (s.isUnreachable()) {
+				s.remove(true);
+				removed.add(s);
+				return true;
+			}
+			return false;
+		})) {}
+
+		if (removed.stream().anyMatch(states::contains))
+			throw new IllegalStateException();
+
 		// remove loop on initial when it's not an final (e.a. epsilon is not contained)
-		if (!epsilon && states.size() == 1) transitions.clear();
+		if (!epsilon && states.size() == 1) {
+			transitions.clear();
+			initial.next.clear();
+			initial.prev.clear();
+		}
+
 		return this;
 	}
 
@@ -605,22 +625,23 @@ implements Language.Naive<Machine<T, R, TYPE>, T, TYPE>, Function<List<T>, List<
 
 		if (hasEpsilon())
 			result.transition(s1.get(initial()), factory.epsilon(), newFinal);
-		
-		this.finals().stream().map(s1::get).forEach(f -> 
-			result.transition(f, factory.epsilon(), newFinal)
-		);
 
-		result.states.stream().filter(State::isNormal).forEach(s -> {
-			s.prev(false).forEach(left -> {
-				s.next(false).forEach(right -> {
-					result.transition(
-						left.source(), 
-						left.type().concat(s.loop().orElse(factory.epsilon()).star()).concat(right.type()), 
-						right.target()
-					);
+		this.finals().stream().map(s1::get).forEach(f -> result.transition(f, factory.epsilon(), newFinal));
+
+		result.states.removeIf(s -> {
+			if (s.isNormal()) {
+				s.prevNoLoop().forEach(left -> {
+					s.nextNoLoop().forEach(right -> {
+						result.transition(
+								left.source(),
+								left.type().concat(s.loop().orElse(factory.epsilon()).star()).concat(right.type()),
+								right.target()
+								);
+					});
 				});
-			});
-			result.transitions.removeIf(t -> s.isSource(t) || s.isTarget(t));
+				return s.remove(true);
+			}
+			return false;
 		});
 		result.removeUnreachable();
 

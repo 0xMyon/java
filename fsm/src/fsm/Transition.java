@@ -18,7 +18,7 @@ class Transition<T,R,TYPE extends Type<TYPE,T>> {
 	/**
 	 * Annotated {@link Type}
 	 */
-	private final TYPE type;
+	private TYPE type;
 
 	private final List<R> result = new LinkedList<>();
 
@@ -64,20 +64,23 @@ class Transition<T,R,TYPE extends Type<TYPE,T>> {
 		if (object instanceof Transition) {
 			final Transition<?,?,?> that = (Transition<?,?,?>) object;
 			return Objects.equals(source, that.source) &&
-					Objects.equals(target, that.target) &&
-					Objects.equals(type, that.type);
+					Objects.equals(target, that.target);
 		}
 		return false;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(source(), target(), type());
+		return Objects.hash(source(), target());
 	}
 
 	@Override
 	public String toString() {
 		return source().toString()+"["+type().toString()+"]"+target().toString();
+	}
+
+	public void unite(final TYPE type) {
+		this.type = this.type.unite(type);
 	}
 
 
