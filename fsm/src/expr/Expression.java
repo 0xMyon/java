@@ -107,20 +107,24 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 	}
 
 	public static class Factory<T, TYPE extends Type<TYPE,T>> implements Language.Naive.Factory<Expression<T,TYPE>, T, TYPE> {
-		
-		public Factory(Type.Factory<TYPE,T> factory) {
+
+		private final Type.Factory<TYPE,T> factory;
+		private final Expression<T, TYPE> empty;
+		private final Expression<T, TYPE> epsilon;
+
+		public Factory(final Type.Factory<TYPE,T> factory) {
 			this.factory = factory;
+			empty = Union.of(factory);
+			epsilon = Sequence.of(factory);
 		}
-		
-		private Type.Factory<TYPE,T> factory;
-		
+
 		@Override
 		public Expression<T,TYPE> empty() {
-			return Union.of(factory);
+			return empty;
 		}
 		@Override
 		public Expression<T,TYPE> epsilon() {
-			return Sequence.of(factory);
+			return epsilon;
 		}
 		@Override
 		public Expression<T,TYPE> factor(final T that) {
