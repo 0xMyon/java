@@ -231,14 +231,14 @@ public class State<T,R,TYPE extends Type<TYPE, T>> {
 	 * @return true, if this {@link State} has no outgoing {@link Transition} and is not a final {@link State}
 	 */
 	private boolean isLastButNotFinal() {
-		return !isFinal() && next().allMatch(t -> t.target() == this);
+		return !isFinal() && next().allMatch(this::isTarget);
 	}
 
 	/**
 	 * @return true, if this {@link State} has no incoming {@link Transition}
 	 */
 	private boolean isFirst() {
-		return prev().allMatch(t -> t.source() == this);
+		return prev().allMatch(this::isSource);
 	}
 
 
