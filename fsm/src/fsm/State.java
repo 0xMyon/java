@@ -1,9 +1,7 @@
 package fsm;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,9 +21,6 @@ public class State<T,R,TYPE extends Type<TYPE, T>> {
 	private final Machine<T,R,TYPE> machine;
 
 	private final int id;
-
-	protected final Set<Transition<T,R,TYPE>> next = new HashSet<>();
-	protected final Set<Transition<T,R,TYPE>> prev = new HashSet<>();
 
 
 	State(final Machine<T,R,TYPE> machine) {
@@ -98,14 +93,6 @@ public class State<T,R,TYPE extends Type<TYPE, T>> {
 		return equals(t.target());
 	}
 
-	boolean nonTarget(final Transition<T,R,TYPE> t) {
-		return !isTarget(t);
-	}
-
-	boolean nonSource(final Transition<T,R,TYPE> t) {
-		return !isSource(t);
-	}
-
 	/**
 	 * @param t {@link Transition}
 	 * @return true, if this is the target {@link State} of t and not a loop on t
@@ -127,15 +114,15 @@ public class State<T,R,TYPE extends Type<TYPE, T>> {
 	 * @return {@link Stream} of succeeding {@link Transition} with loop
 	 */
 	Stream<Transition<T,R,TYPE>> next() {
-		return next.stream();
+		return next(true);
 	}
 
 	/**
 	 * @param withLoop enable loops
 	 * @return {@link Stream} of succeeding {@link Transition}
 	 */
-	Stream<Transition<T,R,TYPE>> nextNoLoop() {
-		return next().filter(this::nonTarget).collect(Collectors.toSet()).stream();
+	Stream<Transition<T,R,TYPE>> next(final boolean withLoop) {
+		return machine.transitions().stream().filter(withLoop ? this::isSource : this::isSourceNoLoop).collect(Collectors.toSet()).stream();
 	}
 
 	/**
@@ -169,11 +156,11 @@ public class State<T,R,TYPE extends Type<TYPE, T>> {
 	}
 
 	Stream<Transition<T,R,TYPE>> prev() {
-		return prev.stream();
+		return prev(true);
 	}
 
-	Stream<Transition<T,R,TYPE>> prevNoLoop() {
-		return prev().filter(this::nonSource).collect(Collectors.toSet()).stream();
+	Stream<Transition<T,R,TYPE>> prev(final boolean withLoop) {
+		return machine.transitions().stream().filter(withLoop ? this::isTarget : this::isTargetNoLoop).collect(Collectors.toSet()).stream();
 	}
 
 	/**
@@ -181,43 +168,32 @@ public class State<T,R,TYPE extends Type<TYPE, T>> {
 	 * @return
 	 * @throws IllegalStateException if this is the initial {@link State}
 	 */
-	boolean remove(final boolean inRemoveIf) {
+	boolean remove() {
 		if (isInitial())
 			throw new IllegalStateException();
-
-		next.forEach(t -> {
-			if (nonTarget(t)) t.target().prev.remove(t);
-			machine.transitions().remove(t);
-		});
-
-		prev.forEach(t -> {
-			if (nonSource(t)) t.source().next.remove(t);
-			machine.transitions().remove(t);
-		});
-
+		machine.transitions().removeIf(
+				t -> {
+					try {
+						return t.source().equals(this) || t.target().equals(this);
+					} catch (final Exception e) {
+						return false;
+					}
+				}
+				);
 		machine.finals().remove(this);
-
-		if (!inRemoveIf)
-			machine.states().remove(this);
-
-		return true;
+		return machine.states().remove(this);
 	}
 
-	boolean isValid() {
-		return machine.states().contains(this);
-	}
 
 	void combine(final State<T,R,TYPE> that) {
-		if (isValid() && that.isValid()) {
-
-			if (that.isInitial()) {
-				that.combine(this);
-				return;
-			}
-			that.next().forEach(t -> machine.transition(this, t.type(), t.target()));
-			that.prev().forEach(t -> machine.transition(t.source(), t.type(), this));
-			that.remove(false);
+		if (that.isInitial()) {
+			that.combine(this);
+			return;
 		}
+		//System.out.println(this+"="+that);
+		that.next().forEach(t -> machine.transition(this, t.type(), t.target()));
+		that.prev().forEach(t -> machine.transition(t.source(), t.type(), this));
+		that.remove();
 	}
 
 	/**
@@ -231,14 +207,14 @@ public class State<T,R,TYPE extends Type<TYPE, T>> {
 	 * @return true, if this {@link State} has no outgoing {@link Transition} and is not a final {@link State}
 	 */
 	private boolean isLastButNotFinal() {
-		return !isFinal() && next().allMatch(this::isTarget);
+		return !isFinal() && next().allMatch(t -> t.target() == this);
 	}
 
 	/**
 	 * @return true, if this {@link State} has no incoming {@link Transition}
 	 */
 	private boolean isFirst() {
-		return prev().allMatch(this::isSource);
+		return prev().allMatch(t -> t.source() == this);
 	}
 
 
@@ -248,6 +224,7 @@ public class State<T,R,TYPE extends Type<TYPE, T>> {
 	public String toString() {
 		return "<"+(isInitial()?"I":"")+id+(isFinal()?"F":"")+(isUnreachable()?"U":"")+">";
 	}
+
 
 
 }

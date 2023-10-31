@@ -16,7 +16,7 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 	public <R,RTYPE extends Type<RTYPE,R>> Expression<R,RTYPE> map(final Function<T, R> function) {
 		return convert(new Factory<>(), function);
 	}
-	 */
+	*/
 
 
 	@Override
@@ -38,7 +38,7 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 	public Expression<T,TYPE> optional() {
 		return Iteration.of(this, Iteration.Version.Optional);
 	}
-
+	
 	@Override
 	public Expression<T,TYPE> star() {
 		return Iteration.of(this, Iteration.Version.Star);
@@ -48,7 +48,7 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 	public Expression<T,TYPE> complement() {
 		return Complement.of(this);
 	}
-
+	
 
 	@Override
 	public Expression<T, TYPE> reverse() {
@@ -60,7 +60,7 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 		return Parallel.of(factory().alphabet(), this, that);
 	}
 
-	private final Machine.Factory<T, Void, ComplementSet<T, FiniteSet<T>>> MACHINE =
+	private final Machine.Factory<T, Void, ComplementSet<T, FiniteSet<T>>> MACHINE = 
 			new Machine.Factory<>(new ComplementSet.Factory<>(new FiniteSet.Factory<>()));
 
 
@@ -97,7 +97,7 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 	public Expression<T,TYPE> THIS() {
 		return this;
 	}
-
+	
 	/**
 	 * @param <T>
 	 * @return default {@link Factory}
@@ -105,26 +105,22 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 	public static <T> Factory<T, ComplementSet<T, FiniteSet<T>>> FACTORY() {
 		return new Factory<>(ComplementSet.FACTORY());
 	}
-
+	
 	public static class Factory<T, TYPE extends Type<TYPE,T>> implements Language.Naive.Factory<Expression<T,TYPE>, T, TYPE> {
-
-		private final Type.Factory<TYPE,T> factory;
-		private final Expression<T, TYPE> empty;
-		private final Expression<T, TYPE> epsilon;
-
-		public Factory(final Type.Factory<TYPE,T> factory) {
+		
+		public Factory(Type.Factory<TYPE,T> factory) {
 			this.factory = factory;
-			empty = Union.of(factory);
-			epsilon = Sequence.of(factory);
 		}
-
+		
+		private Type.Factory<TYPE,T> factory;
+		
 		@Override
 		public Expression<T,TYPE> empty() {
-			return empty;
+			return Union.of(factory);
 		}
 		@Override
 		public Expression<T,TYPE> epsilon() {
-			return epsilon;
+			return Sequence.of(factory);
 		}
 		@Override
 		public Expression<T,TYPE> factor(final T that) {
@@ -132,7 +128,7 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 		}
 
 		@Override
-		public Expression<T, TYPE> letter(final TYPE type) {
+		public Expression<T, TYPE> letter(TYPE type) {
 			return Element.of(type);
 		}
 
@@ -161,10 +157,10 @@ public abstract class Expression<T, TYPE extends Type<TYPE,T>> implements Langua
 	public boolean startsWith(final Expression<T,TYPE> that) {
 		return convert().startsWith(that.convert());
 	}
-
+	
 
 	@Override
-	public List<T> random(final Random random) {
+	public List<T> random(Random random) {
 		return convert().random(random);
 	}
 

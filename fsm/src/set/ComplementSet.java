@@ -22,9 +22,9 @@ public class ComplementSet<T, TYPE extends Set<TYPE,T>> implements Type<Compleme
 	public ComplementSet(final TYPE set) {
 		this(false, set);
 	}
-
+	
 	@SafeVarargs
-	static <T> ComplementSet<T, FiniteSet<T>> of(final T... ts) {
+	static <T> ComplementSet<T, FiniteSet<T>> of(T... ts) {
 		return new ComplementSet<>(new FiniteSet<>(ts));
 	}
 
@@ -35,13 +35,13 @@ public class ComplementSet<T, TYPE extends Set<TYPE,T>> implements Type<Compleme
 
 	@Override
 	public ComplementSet<T,TYPE> unite(final ComplementSet<T,TYPE> that) {
-		return op(that, Boolean::logicalOr, Set::unite, Set::removed, Set::minus, Set::intersect);
+		return op(that, BooleanOperator.disjunction, Set::unite, Set::removed, Set::minus, Set::intersect);
 	}
 
 
 	@Override
 	public ComplementSet<T,TYPE> intersect(final ComplementSet<T,TYPE> that) {
-		return op(that, Boolean::logicalAnd, Set::intersect, Set::minus, Set::removed, Set::unite);
+		return op(that, BooleanOperator.conjunction, Set::intersect, Set::minus, Set::removed, Set::unite);
 	}
 
 	// TODO
@@ -130,10 +130,10 @@ public class ComplementSet<T, TYPE extends Set<TYPE,T>> implements Type<Compleme
 
 	public static class Factory<T,TYPE extends Set<TYPE,T>> implements Type.Factory<ComplementSet<T,TYPE>, T> {
 
-		public Factory(final Set.Factory<TYPE,T> factory) {
+		public Factory(Set.Factory<TYPE,T> factory) {
 			this.factory = factory;
 		}
-
+		
 		private final Set.Factory<TYPE,T> factory;
 
 		@Override
@@ -147,8 +147,8 @@ public class ComplementSet<T, TYPE extends Set<TYPE,T>> implements Type<Compleme
 		}
 
 	}
-
-
+	
+	
 
 	@Override
 	public Factory<T,TYPE> factory() {
@@ -157,13 +157,13 @@ public class ComplementSet<T, TYPE extends Set<TYPE,T>> implements Type<Compleme
 
 
 	@Override
-	public <THAT extends Type<THAT, U>, U, FACTORY extends Type.Factory<THAT, U>>
+	public <THAT extends Type<THAT, U>, U, FACTORY extends Type.Factory<THAT, U>> 
 	THAT convert(final FACTORY factory,	final Function<T, U> function) {
 		return set.convert(factory, function).complement(complement);
 	}
 
 	@Override
-	public <THAT extends Set<THAT, U>, U, FACTORY extends Set.Factory<THAT, U>>
+	public <THAT extends Set<THAT, U>, U, FACTORY extends Set.Factory<THAT, U>> 
 	THAT convert(final FACTORY factory,	final Function<T, U> function) {
 		if (!complement)
 			return set.convert(factory, function);
@@ -172,8 +172,8 @@ public class ComplementSet<T, TYPE extends Set<TYPE,T>> implements Type<Compleme
 	}
 
 	@Override
-	public T random(final Random random) {
-		if (complement)
+	public T random(Random random) {
+		if (complement) 
 			throw new RuntimeException("can not give a complement random");
 		else
 			return set.random(random);
